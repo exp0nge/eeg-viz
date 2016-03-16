@@ -23,25 +23,25 @@ body {
 // From http://mkweb.bcgsc.ca/circos/guide/tables/
 	
 	//CORRELATION
+	//Creates the matrix
 var matrix = new Array(64);
 for (var i = 0; i < 64; i++) {
   matrix[i] = new Array(64);
 }
-
+	//sets it all the zero
 for(var i = 0; i < 64; i++){
 	for(var j = 0; j < 64; j++){
 	matrix[i][j] = 0;
-	
 	}
 }
 
-
+/* //Random Matrix. May need to refresh if there's an error
 for(var i = 0; i < 32; i++){
 	var first = Math.floor((Math.random() * 64)+1);
 	var second = Math.floor((Math.random() * 64)+1);
 	matrix[first][second] = (Math.random()%5)-2.5;
 	matrix[second][first] = (Math.random()%5)-2.5;
-}
+}*/
 
 
 
