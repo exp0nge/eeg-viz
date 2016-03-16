@@ -23,25 +23,48 @@ body {
 // From http://mkweb.bcgsc.ca/circos/guide/tables/
 	
 	//CORRELATION
-var matrix = [
-  [ 0,	1,	2,	3,	10],
-  [ 1, 	0, 	2, 	3,	4],
-  [ 1, 	2, 	0, 	3,	4],
-  [ 1,  2,  3, 	0, 	4],
-  [	1, 	2,	3,	4,	0]
-];
+var matrix = new Array(64);
+for (var i = 0; i < 64; i++) {
+  matrix[i] = new Array(64);
+}
+
+for(var i = 0; i < 64; i++){
+	for(var j = 0; j < 64; j++){
+	matrix[i][j] = 0;
+	
+	}
+}
+
+
+for(var i = 0; i < 32; i++){
+	var first = Math.floor((Math.random() * 64)+1);
+	var second = Math.floor((Math.random() * 64)+1);
+	matrix[first][second] = (Math.random()%5)-2.5;
+	matrix[second][first] = (Math.random()%5)-2.5;
+}
+
+
+
+
 var chord = d3.layout.chord()
     .padding(.05)
     .sortSubgroups(d3.descending)
     .matrix(matrix);
+	
 
+
+
+	
 	//DIMENSIONS
-var width = 1200,
-    height = 600,
+var width = 1000,
+    height = 600 ,
     innerRadius = Math.min(width, height) * .41,
     outerRadius = innerRadius * 1.05,
-	names = {0:"a",1:"b",2:"c",3:"d",4:"e"};
+	names = [];
 	
+for(var i = 0; i < 64; i++){
+	names[i] = "s"+i;
+	}
 	//COLORS
 var fill = d3.scale.ordinal()
     .domain(d3.range(5)) // number of colors
@@ -53,7 +76,10 @@ var svg = d3.select("body").append("svg")
     .attr("height", height)
   .append("g")
     .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
 	
+
+	  
 	//Setting Colors and Mouseover/Mouseout effects
 svg.append("g").selectAll("path")
     .data(chord.groups)
@@ -63,8 +89,9 @@ svg.append("g").selectAll("path")
     .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
     .on("mouseover", fade(.2))
     .on("mouseout", fade(1));
-/*
+
 	//chord labels taken from http://mbostock.github.io/d3/talk/20111018/chord.html
+/*
 svg.append("svg:text")
 	.each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
       .attr("dy", ".35em")
@@ -91,7 +118,7 @@ var ticks = svg.append("g").selectAll("g")
 ticks.append("line")
     .attr("x1", 1)
     .attr("y1", 0)
-    .attr("x2", 5)
+    .attr("x2", 1)
     .attr("y2", 0)
 	
     .style("stroke", "#000");
@@ -103,8 +130,30 @@ ticks.append("text")
     .attr("text-anchor", function(d) {return d.angle > Math.PI ? "end" : null;})
     .attr("transform", function(d) {return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
     })
-    .text(function(d) { return d.label; });
+    //.text(function(d) { return d.label; });
 
+var chordgroups = chord.groups()
+	.map(function(d){ d.angle = (d.startAngle + d.endAngle)/2; return d;});
+	
+svg.selectAll(".text")
+	.data(chordgroups)
+	.enter()
+	.append("text")
+	.attr("class", "text")
+	.attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+	.attr("transform", function(d){
+
+		//rotate each label around the circle           
+		return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" + 
+			   "translate(" + (outerRadius + 10) + ")" +
+			   (d.angle > Math.PI ? "rotate(180)" : "");
+
+	})
+	.text(function(d){
+		//set the text content
+		return names[d.index];
+	})
+	
 	//
 svg.append("g")
     .attr("class", "chord")
