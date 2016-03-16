@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+*.mat
 # Distribution / packaging
 .Python
 env/
