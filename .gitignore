@@ -3,10 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Us
+*.ipynb
+*.mat
+
 # C extensions
-*.mat
 *.so
-*.mat
 # Distribution / packaging
 .Python
 env/
