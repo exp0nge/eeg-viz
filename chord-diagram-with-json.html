@@ -17,13 +17,10 @@ body {
 
 </style>
 <body>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script>
 
 // From http://mkweb.bcgsc.ca/circos/guide/tables/
-
-$(document).ready(function() {
 	//CORRELATION
 	//Creates the matrix
 var matrix = new Array(64);
@@ -39,13 +36,15 @@ for(var i = 0; i < 64; i++){
 	}
 }
 
-$.getJSON('/media/correlation_matrix.json', function(data){
-	$.each(data, function(k, v) {
+d3.json('/media/correlation_matrix.json', function(correlation_matrix_data){
+	for (k in correlation_matrix_data) {
+		var v = correlation_matrix_data[k];
 		var col_index = 0;
 		for (col_index = 0; col_index < v.length; col_index++){
-			matrix[parseInt(k)][col_index] = v[col_index];
+			matrix[parseInt(k)][col_index] = Math.round(v[col_index]);
+
 		}
-	});
+	};
 
 
 	var chord = d3.layout.chord()
@@ -197,9 +196,5 @@ $.getJSON('/media/correlation_matrix.json', function(data){
 // 	matrix[first][second] = (Math.random()%5)-2.5;
 // 	matrix[second][first] = (Math.random()%5)-2.5;
 // }
-
-
-
-});
 
 </script>
