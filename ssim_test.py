@@ -33,9 +33,15 @@ for i in range(len(average)):
 
 
 def ssim(index,indey):
-    covxy = np.cov(s[index],s[indey])
+    covxy = np.cov(s[index],s[indey])[0][1]
     c1 = (0.01 * dyn_range[index])
     c2 = (0.03 * dyn_range[indey])
+    # if(indey == 0):
+    #     print("covxy = ",covxy)
+    #     print("c1 = ",c1)
+    #     print("c2 = ",c2)
+    #     print("average = ",average[0])
+    #     print("variance = ",variance[0])
     ssim_data[index][indey] = (((2*average[index]*average[indey]) + c1)*((2*covxy)+c2))\
                                   /((average[index]**2 + average[indey]**2 + c1)*(variance[index] + variance[indey] + c2))
 
@@ -45,8 +51,8 @@ for i in range(64):
         ssim(i,j)
 
 print(ssim_data)
-print(ssim_data[0][0])
-print(ssim_data[0][1])
+# print(ssim_data[0][0])
+# print(ssim_data[0][1])
 
 
 '''
