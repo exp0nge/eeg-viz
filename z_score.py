@@ -4,9 +4,12 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import pearsonr
+from scipy import stats
 from scipy.io import loadmat
+from sklearn.cluster.bicluster import SpectralBiclustering
 
-MAX_ROW_LENGTH = 10
+MAX_ROW_LENGTH = 5
+CHANNELS = 1
 
 m = loadmat('s5d2nap_justdata.mat')
 
@@ -33,19 +36,31 @@ def calculate_correlation(start):
         index, fig = None, None
         for i in range(16):
             index = 16 * j + i
-            fig = figs[j]
-            ax = fig.add_subplot(4, 4, i + 1)
-            ax.scatter(s[start], s[index])
+            # fig = figs[j]
+            # ax = fig.add_subplot(4, 4, i + 1)
+            # ax.scatter(s[start], s[index])
             coefficients = np.polyfit(s[start], s[index], 1)
             polynomial = np.poly1d(coefficients)
             ys = polynomial(s[start])
             channels_data[start][index] = pearsonr(s[start], s[index])[0]
-            ax.set_title('s%s vs s%s' % (start, index))
-            ax.plot(s[start], ys)
-        fig.tight_layout()
-        fig.savefig('corr_%s_v_%s_%i_ts_%i.svg' % (start, index, j, MAX_ROW_LENGTH))
+            # Follow is to dump graphs as SVG
+            # ax.set_title('s%s vs s%s' % (start, index))
+            # ax.plot(s[start], ys)
+        # fig.tight_layout()
+        # fig.savefig('corr_%s_v_%s_%i_ts_%i.svg' % (start, index, j, MAX_ROW_LENGTH))
 
 
-for i in range(1):
+for i in range(64):
     print 'doing calculate_correlation for %i' % i
     calculate_correlation(i)
+
+z_score = stats.zscore(channels_data)
+# plt.scatter(range(len(channels_data)), z_score)
+plt.title('Z Score Biclustering Over %i ms' % MAX_ROW_LENGTH)
+spectral_model = SpectralBiclustering()
+spectral_model.fit(z_score)
+fit_data = z_score[np.argsort(spectral_model.row_labels_)]
+fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
+plt.matshow(fit_data, cmap=plt.cm.Blues)
+# plt.savefig('z_score_biclustering_%i_vs_all_ts_%i.svg' % (0, MAX_ROW_LENGTH))
+plt.show()
