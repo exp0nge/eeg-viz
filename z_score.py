@@ -6,21 +6,24 @@ import numpy as np
 from scipy.stats import pearsonr
 from scipy.io import loadmat
 
+MAX_ROW_LENGTH = 10
+
 m = loadmat('s5d2nap_justdata.mat')
-MAX_ROW_LENGTH = 1
 
 matrix = m['s5d2nap']
 
-eeg = np.array(matrix[:MAX_ROW_LENGTH])
+# The following will take MAX_ROW_LENGTH of each row in our original matrix
+new_matrix = []
+for ind, row in enumerate(matrix):
+    new_matrix.append(row[:MAX_ROW_LENGTH])
+eeg = np.array(new_matrix)
 
-s = pd.DataFrame(matrix).transpose()
+s = pd.DataFrame(new_matrix).transpose()
 
-fig1 = plt.figure()
-fig2 = plt.figure()
-fig3 = plt.figure()
-fig4 = plt.figure()
-figs = [fig1, fig2, fig3, fig4]
-channels_data = {}
+figs = [plt.figure() for i in range(4)]
+
+# Need to store correlation data
+channels_data = [[] for each_row in range(64)]
 for i in range(64):
     channels_data[i] = range(64)
 
@@ -37,10 +40,10 @@ def calculate_correlation(start):
             polynomial = np.poly1d(coefficients)
             ys = polynomial(s[start])
             channels_data[start][index] = pearsonr(s[start], s[index])[0]
-            ax.set_title('s%s vs s%s, j: %i' % (start, index, j))
+            ax.set_title('s%s vs s%s' % (start, index))
             ax.plot(s[start], ys)
         fig.tight_layout()
-        fig.savefig('%s_v_%s_%i.svg' % (start, index, j))
+        fig.savefig('corr_%s_v_%s_%i_ts_%i.svg' % (start, index, j, MAX_ROW_LENGTH))
 
 
 for i in range(1):
