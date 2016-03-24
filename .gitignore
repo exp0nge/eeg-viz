@@ -6,6 +6,8 @@ __pycache__/
 # Us
 *.ipynb
 *.mat
+.ipynb_checkpoints
+.idea
 
 # C extensions
 *.so

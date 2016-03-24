@@ -41,10 +41,14 @@ d3.json('/media/correlation_matrix.json', function(correlation_matrix_data){
 		var v = correlation_matrix_data[k];
 		var col_index = 0;
 		for (col_index = 0; col_index < v.length; col_index++){
-			matrix[parseInt(k)][col_index] = Math.round(v[col_index]);
-
+            if (v[col_index] >= .4 && v[col_index] != 1) {
+			    matrix[parseInt(k)][col_index] = v[col_index];
+            }
+            else {
+                matrix[parseInt(k)][col_index] = 0;
+            }
 		}
-	};
+    }
 
 
 	var chord = d3.layout.chord()

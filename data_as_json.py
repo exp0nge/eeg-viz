@@ -13,7 +13,7 @@ matrix = m['s5d2nap']
 
 new_matrix = []
 for index, row in enumerate(matrix):
-	new_matrix.append(row[:5000])
+	new_matrix.append(row[:30000])
 eeg = np.array(new_matrix)
 
 s = pd.DataFrame(new_matrix).transpose()
