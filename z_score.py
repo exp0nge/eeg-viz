@@ -6,33 +6,19 @@ import numpy as np
 from scipy.stats import pearsonr
 from scipy import stats
 from scipy.io import loadmat
-from sklearn.cluster.bicluster import SpectralBiclustering
-import cPickle
-
-MAX_ROW_LENGTH = 3000000
-CHANNELS = 1
+from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
 
 m = loadmat('s5d2nap_justdata.mat')
 
 matrix = m['s5d2nap']
-
-# The following will take MAX_ROW_LENGTH of each row in our original matrix
-# new_matrix = []
-# for ind, row in enumerate(matrix):
-#     new_matrix.append(row[:MAX_ROW_LENGTH])
-# eeg = np.array(new_matrix)
-
-s = pd.DataFrame(matrix).transpose()
-
-figs = [plt.figure() for i in range(4)]
-
-# Need to store correlation data
-channels_data = [[] for each_row in range(64)]
-for i in range(64):
-    channels_data[i] = range(64)
+print 'Data loaded'
 
 
-def calculate_correlation(start):
+def calculate_pearson_correlation(data_matrix, store_matrix, start):
+    # Need to store correlation data
+    s = pd.DataFrame(data_matrix)
+    s = s.transpose()
+    figs = [plt.figure() for i in range(4)]
     for j in range(4):
         index, fig = None, None
         for i in range(16):
@@ -43,27 +29,77 @@ def calculate_correlation(start):
             coefficients = np.polyfit(s[start], s[index], 1)
             polynomial = np.poly1d(coefficients)
             ys = polynomial(s[start])
-            channels_data[start][index] = pearsonr(s[start], s[index])[0]
+            store_matrix[start][index] = pearsonr(s[start], s[index])[0]
             # Follow is to dump graphs as SVG
             # ax.set_title('s%s vs s%s' % (start, index))
             # ax.plot(s[start], ys)
-        # fig.tight_layout()
-        # fig.savefig('corr_%s_v_%s_%i_ts_%i.svg' % (start, index, j, MAX_ROW_LENGTH))
+            # fig.tight_layout()
+            # fig.savefig('corr_%s_v_%s_%i_ts_%i.svg' % (start, index, j, MAX_ROW_LENGTH))
+    return store_matrix
 
 
-for i in range(64):
-    print 'doing calculate_correlation for %i' % i
-    calculate_correlation(i)
+def calculate_n_columns(data_matrix, n=64):
+    channels_data = [[] for each_row in range(64)]
+    for row in range(64):
+        channels_data[row] = range(64)
 
-# z_score = stats.zscore(channels_data)
-# plt.title('Z Score Biclustering Over %i ms' % MAX_ROW_LENGTH)
-# spectral_model = SpectralBiclustering()
-# spectral_model.fit(z_score)
-# fit_data = z_score[np.argsort(spectral_model.row_labels_)]
-# fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
-# plt.matshow(fit_data, cmap=plt.cm.Blues)
-# plt.savefig('z_score_biclustering_%i_vs_all_ts_%i.svg' % (0, MAX_ROW_LENGTH))
-# plt.show()
+    for row in range(n):
+        print 'doing calculate_correlation for %i' % row
+        channels_data = calculate_pearson_correlation(data_matrix, channels_data, row)
+    return data_matrix
 
-with open('pearson_r_all_64_dictionary_dump', 'wb') as f:
-    cPickle.dump(channels_data, f)
+
+def slice_matrix(data_matrix, first_n_elements):
+    channels_data = [[] for each_row in range(64)]
+    for row in range(64):
+        channels_data[row] = data_matrix[row][:first_n_elements]
+
+    return np.array(channels_data)
+
+
+def plot_biclustering_with_pearson(time_ms, title):
+    sliced_matrix = slice_matrix(matrix, time_ms)
+    channels_data = calculate_n_columns(sliced_matrix)
+    z_score = stats.zscore(channels_data)
+    plt.title('Z Score Biclustering Over %i ms' % time_ms)
+    spectral_model = SpectralBiclustering()
+    spectral_model.fit(z_score)
+    fit_data = z_score[np.argsort(spectral_model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.savefig('z_score_%s_biclustering_all_ts_%i.svg' % (time_ms, title))
+
+
+def plot_biclustering_raw_data(time_ms):
+    # take the transpose of sliced matrix
+    channels_data = slice_matrix(matrix, time_ms)
+    print len(channels_data), len(channels_data[1])
+    z_score = stats.zscore(channels_data)
+    plt.title('Z Score Biclustering Over %i ms' % time_ms)
+    spectral_model = SpectralBiclustering()
+    spectral_model.fit(z_score)
+    fit_data = z_score[np.argsort(spectral_model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.savefig('z_score_raw_biclustering_all_ts_%i.svg' % time_ms)
+
+def plot_coclusters_raw_data(time_ms):
+    # take the transpose of sliced matrix
+    channels_data = slice_matrix(matrix, time_ms)
+    print len(channels_data), len(channels_data[1])
+    z_score = stats.zscore(channels_data)
+    plt.title('Z Score Biclustering Over %i ms' % time_ms)
+    spectral_model = SpectralCoclustering()
+    spectral_model.fit(z_score)
+    fit_data = z_score[np.argsort(spectral_model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.savefig('z_score_raw_coclustering_all_ts_%i.svg' % time_ms)
+
+
+if __name__ == '__main__':
+    #plot_biclustering_with_pearson(30000000000)
+    plot_biclustering_raw_data(1000)
+    plot_biclustering_raw_data(3000)
+    plot_biclustering_raw_data(5000)
+    plot_coclusters_raw_data(5000)
