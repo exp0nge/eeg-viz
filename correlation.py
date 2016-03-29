@@ -21,7 +21,7 @@ matrix = m['s5d2nap']
 
 new_matrix = []
 for index, row in enumerate(matrix):
-    new_matrix.append(row[:360000])
+    new_matrix.append(row[100000:460000])
 # print len(new_matrix[0])
 eeg = np.array(new_matrix)
 # In[7]:
