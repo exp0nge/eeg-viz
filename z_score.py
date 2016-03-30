@@ -70,9 +70,12 @@ def plot_biclustering_with_pearson(time_ms, title):
     plt.savefig('z_score_%s_biclustering_all_ts_%i.svg' % (time_ms, title))
 
 
-def plot_biclustering_raw_data(time_ms):
+def plot_biclustering_raw_data(time_ms, t=False):
     # take the transpose of sliced matrix
-    channels_data = slice_matrix(matrix, time_ms)
+    if t:
+        channels_data = slice_matrix(matrix, time_ms).T
+    else:
+        channels_data = slice_matrix(matrix, time_ms)
     print len(channels_data), len(channels_data[1])
     z_score = stats.zscore(channels_data)
     plt.title('Z Score Biclustering Over %i ms' % time_ms)
@@ -81,11 +84,16 @@ def plot_biclustering_raw_data(time_ms):
     fit_data = z_score[np.argsort(spectral_model.row_labels_)]
     fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
     plt.matshow(fit_data, cmap=plt.cm.Blues)
-    plt.savefig('z_score_raw_biclustering_all_ts_%i.svg' % time_ms)
+    # plt.savefig('z_score_raw_biclustering_all_ts_%i_T_%s.svg' % (time_ms, str(t)))
+    plt.show()
 
-def plot_coclusters_raw_data(time_ms):
+
+def plot_coclusters_raw_data(time_ms, t=False):
     # take the transpose of sliced matrix
-    channels_data = slice_matrix(matrix, time_ms)
+    if t:
+        channels_data = slice_matrix(matrix, time_ms)
+    else:
+        channels_data = slice_matrix(matrix, time_ms)
     print len(channels_data), len(channels_data[1])
     z_score = stats.zscore(channels_data)
     plt.title('Z Score Biclustering Over %i ms' % time_ms)
@@ -94,12 +102,31 @@ def plot_coclusters_raw_data(time_ms):
     fit_data = z_score[np.argsort(spectral_model.row_labels_)]
     fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
     plt.matshow(fit_data, cmap=plt.cm.Blues)
-    plt.savefig('z_score_raw_coclustering_all_ts_%i.svg' % time_ms)
+    plt.savefig('z_score_raw_coclustering_all_ts_%i_T_%s.svg' % (time_ms, str(t)))
 
+
+def plot_biclusters_n_intervals(n_intervals=30000):
+    channels_data = [[] for i in range(64)]
+    for row in range(64):
+        start, end = 0, n_intervals
+        row_data = matrix[row]
+        while end < len(row_data):
+            channels_data[row].append(float(sum(row_data[start:end]))/len(row_data[start:end]))
+            start = end
+            end += n_intervals
+    z_score = stats.zscore(np.array(channels_data))
+    plt.title('Z Score Biclustering')
+    spectral_model = SpectralBiclustering()
+    spectral_model.fit(z_score)
+    fit_data = z_score[np.argsort(spectral_model.row_labels_)]
+    fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
+    plt.matshow(fit_data, cmap=plt.cm.Blues)
+    plt.savefig('z_score_raw_biclustering_all_%is.svg' % (n_intervals/1000))
 
 if __name__ == '__main__':
-    #plot_biclustering_with_pearson(30000000000)
-    plot_biclustering_raw_data(1000)
-    plot_biclustering_raw_data(3000)
-    plot_biclustering_raw_data(5000)
-    plot_coclusters_raw_data(5000)
+    # plot_biclustering_with_pearson(30000000000)
+    # plot_biclustering_raw_data(60000)
+    #plot_biclustering_raw_data(60000, t=True)
+    #plot_coclusters_raw_data(60000)
+    #plot_coclusters_raw_data(60000, t=True)
+    plot_biclusters_n_intervals(15000)
