@@ -18,32 +18,51 @@ m = loadmat('s5d2nap_justdata.mat')
 
 matrix = m['s5d2nap']
 
-b, a = signal.butter(2, 0.1, 'low', analog=True)
-w, h = signal.freqs(b, a)
+#lowpass
+b1, a1 = signal.butter(3, 0.1, 'low', analog=True)
+w1, h1 = signal.freqs(b1, a1)
+
+#highpass
+b2, a2 = signal.butter(2, 0.1, 'high', analog=True)
+w2, h2 = signal.freqs(b2, a2)
+
+#create matrix
 new_matrix = []
-for index, row in enumerate(matrix):
-	new_matrix.append(row[0:11000])
+for index, row in (enumerate(matrix)):
+	new_matrix.append(row[0:1000])
 # print len(new_matrix[0])
 eeg = np.array(new_matrix)
-# In[7]:
 
-# In[8]:
-y = signal.lfilter(b, a, eeg[0])
-print y
 
+#normal print
 mat = []
 for row in range(len(new_matrix)):
-	mat.append(signal.lfilter(b, a, eeg[row]))
+	mat.append(eeg[row])
 
 s = pd.DataFrame(mat).transpose()
-print s[10]
 
+#lowpass print
+mat1 = []
+for row in range(len(new_matrix)):
+	mat1.append(signal.lfilter(b1, a1, eeg[row]))
+
+s1 = pd.DataFrame(mat1).transpose()
+
+#highpass print
+mat2 = []
+for row in range(len(new_matrix)):
+	mat2.append(signal.lfilter(b2, a2, eeg[row]))
+s2 = pd.DataFrame(mat2).transpose()
 
 # In[ ]:
-s.plot()
+#s.plot(legend=False)
+s1.plot(legend=False)
+#s2.plot(legend=False)
+#s.legend_.remove()
 # cumsum() adds the value of each channel and displays the sum
 # s = s.cumsum()
 # s.plot()
+
 
 # fig = plt.figure()
 # fig.savefig('matrix.svg')
