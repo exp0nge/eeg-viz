@@ -13,7 +13,7 @@ import cPickle
 m = loadmat('s5d2nap_justdata.mat')
 
 matrix = m['s5d2nap']
-print 'Data loaded'
+print('Data loaded')
 
 
 def calculate_pearson_correlation(data_matrix, store_matrix, start):
