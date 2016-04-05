@@ -18,11 +18,11 @@ m = loadmat('s5d2nap_justdata.mat')
 
 matrix = m['s5d2nap']
 
-b, a = signal.butter(2, 100, 'low', analog=True)
+b, a = signal.butter(2, 0.1, 'low', analog=True)
 w, h = signal.freqs(b, a)
 new_matrix = []
 for index, row in enumerate(matrix):
-	new_matrix.append(row[2000:5000])
+	new_matrix.append(row[0:11000])
 # print len(new_matrix[0])
 eeg = np.array(new_matrix)
 # In[7]:
@@ -36,7 +36,7 @@ for row in range(len(new_matrix)):
 	mat.append(signal.lfilter(b, a, eeg[row]))
 
 s = pd.DataFrame(mat).transpose()
-print s
+print s[10]
 
 
 # In[ ]:
@@ -49,17 +49,17 @@ s.plot()
 # fig.savefig('matrix.svg')
 
 
-plt.figure(2);
+#plt.figure(2);
 
 # plt.plot(eeg[:8,:30000].T + 8000*np.arange(7,-1,-1));
 
 # plt.plot(np.zeros((30000,8)) + 8000*np.arange(7,-1,-1),'--',color='gray');
 
-plt.yticks([]);
+#plt.yticks([]);
 
 # plt.legend(first['channels']);
 
-plt.axis('tight');
+#plt.axis('tight');
 
 
 plt.show()
