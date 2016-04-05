@@ -8,6 +8,8 @@ from scipy import stats
 from scipy.io import loadmat
 from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
 
+import cPickle
+
 m = loadmat('s5d2nap_justdata.mat')
 
 matrix = m['s5d2nap']
@@ -111,7 +113,7 @@ def plot_biclusters_n_intervals(n_intervals=30000):
         start, end = 0, n_intervals
         row_data = matrix[row]
         while end < len(row_data):
-            channels_data[row].append(float(sum(row_data[start:end]))/len(row_data[start:end]))
+            channels_data[row].append(float(sum(row_data[start:end])) / len(row_data[start:end]))
             start = end
             end += n_intervals
     z_score = stats.zscore(np.array(channels_data))
@@ -121,12 +123,20 @@ def plot_biclusters_n_intervals(n_intervals=30000):
     fit_data = z_score[np.argsort(spectral_model.row_labels_)]
     fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
     plt.matshow(fit_data, cmap=plt.cm.Blues)
-    plt.savefig('z_score_raw_biclustering_all_%is.svg' % (n_intervals/1000))
+    plt.savefig('z_score_raw_biclustering_all_%is.svg' % (n_intervals / 1000))
+
+
+def dump_raw_z_scores():
+    z_score = stats.zscore(np.array(matrix))
+    with open('raw_z_scores_array', 'wb') as f:
+        cPickle.dump(z_score, f)
+
 
 if __name__ == '__main__':
     # plot_biclustering_with_pearson(30000000000)
     # plot_biclustering_raw_data(60000)
-    #plot_biclustering_raw_data(60000, t=True)
-    #plot_coclusters_raw_data(60000)
-    #plot_coclusters_raw_data(60000, t=True)
-    plot_biclusters_n_intervals(15000)
+    # plot_biclustering_raw_data(60000, t=True)
+    # plot_coclusters_raw_data(60000)
+    # plot_coclusters_raw_data(60000, t=True)
+    # plot_biclusters_n_intervals(15000)
+    dump_raw_z_scores()
