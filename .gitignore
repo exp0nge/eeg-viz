@@ -8,6 +8,9 @@ __pycache__/
 *.mat
 .ipynb_checkpoints
 .idea
+ssim_data
+s5d2nap_justdata.mat
+s5d2nap_wholestruct.mat
 
 # C extensions
 *.so
