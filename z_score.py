@@ -140,3 +140,4 @@ if __name__ == '__main__':
     # plot_coclusters_raw_data(60000, t=True)
     # plot_biclusters_n_intervals(15000)
     dump_raw_z_scores()
+    print(z_score)
