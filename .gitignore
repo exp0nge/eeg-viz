@@ -8,6 +8,7 @@ __pycache__/
 *.mat
 .ipynb_checkpoints
 .idea
+*.dump
 
 # C extensions
 *.so
