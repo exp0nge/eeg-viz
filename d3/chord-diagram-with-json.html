@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html>
 <head>
 	<title>TestChordDiagram</title>
 </head>
@@ -17,188 +18,185 @@ body {
 
 </style>
 <body>
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script>
-
-// From http://mkweb.bcgsc.ca/circos/guide/tables/
-	//CORRELATION
-	//Creates the matrix
-var matrix = new Array(64);
-
-
-for (var i = 0; i < 64; i++) {
-	matrix[i] = new Array(64);
-}
-	//sets it all the zero
-for(var i = 0; i < 64; i++){
-	for(var j = 0; j < 64; j++){
-	matrix[i][j] = 0;
-	}
-}
-
-d3.json('/media/correlation_matrix.json', function(correlation_matrix_data){
-	for (k in correlation_matrix_data) {
-		var v = correlation_matrix_data[k];
-		var col_index = 0;
-		for (col_index = 0; col_index < v.length; col_index++){
-            if (v[col_index] >= .4 && v[col_index] != 1) {
-			    matrix[parseInt(k)][col_index] = v[col_index];
+    <div id="status"></div>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script>
+        d3.json('/media/pearson_z_2016_trans.json', function(data){
+            console.log('data retrieved');
+            var START_COLUMN = 0;
+            var END_COLUMN = 63;
+            var ROW_TIME = 0;
+            var matrix = new Array(63);
+            // insert into node 0 first
+            var rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
+            matrix[0] = rowData;
+            START_COLUMN = END_COLUMN;
+            END_COLUMN += 62;
+            // fill in rest of array, not forgetting to store the previously calculated value (eg. 1 vs 0 is not in the interval)
+            for (var i = 1; i < 63; i++){
+                console.log('start ' + START_COLUMN + ' end ' + END_COLUMN);
+                rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
+                //rowData.splice(i - 1, 0, data['data'][ROW_TIME][i]); // insert i vs i - 1 since it's not in JSON
+                matrix[i] = rowData;
+                START_COLUMN = END_COLUMN;
+                END_COLUMN += (62 - i);
             }
-            else {
-                matrix[parseInt(k)][col_index] = 0;
+            // fill in missing values in matrix
+            for (var i = 1; i < 63; i++){
+                for (j = 0; j < i; j++){
+                    matrix[i].splice(j, 0, matrix[j][i]);
+                }
             }
-		}
-    }
+            
+            // threshold test
+            for (var i = 0; i < 63; i++){
+                for (var j = 0; j < 63; j++){
+                    if (matrix[i][j] < 0.8){
+                        matrix[i][j] = 0;
+                    }
+                }
+            }
+            
+            
+            var chord = d3.layout.chord()
+                    .padding(0.05)
+                    .sortSubgroups(d3.descending)
+                    .matrix(matrix);
 
 
-	var chord = d3.layout.chord()
-			.padding(0.05)
-			.sortSubgroups(d3.descending)
-			.matrix(matrix);
+                //DIMENSIONS
+            var width = 1000,
+                    height = 600 ,
+                    innerRadius = Math.min(width, height) * 0.41,
+                    outerRadius = innerRadius * 1.05,
+                names = [];
+
+            for(var i = 0; i < 64; i++){
+                names[i] = "s"+i;
+                }
+                //COLORS
+            var fill = d3.scale.ordinal()
+                    .domain(d3.range(5)) // number of colors
+                    .range(["#000000", "#FFDD89", "#957244", "#F26223","#E0E000"]);
+
+                //Setting the Dimensions
+            var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                .append("g")
+                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
 
 
 
+                //Setting Colors and Mouseover/Mouseout effects
+            svg.append("g").selectAll("path")
+                    .data(chord.groups)
+                .enter().append("path")
+                    .style("fill", function(d) { return fill(d.index); })
+                    .style("stroke", function(d) { return fill(d.index); })
+                    .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
+                    .on("mouseover", fade(.2))
+                    .on("mouseout", fade(1));
 
-		//DIMENSIONS
-	var width = 1000,
-			height = 600 ,
-			innerRadius = Math.min(width, height) * 0.41,
-			outerRadius = innerRadius * 1.05,
-		names = [];
+                //chord labels taken from http://mbostock.github.io/d3/talk/20111018/chord.html
+            /*
+            svg.append("svg:text")
+                .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+                        .attr("dy", ".35em")
+                        .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+                        .attr("transform", function(d) {
+                            return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                                    + "translate(" + (r0 + 26) + ")"
+                                    + (d.angle > Math.PI ? "rotate(180)" : "");
+                        })
+                        .text(function(d) { return nameByIndex[d.index]; });
+            */
+                //Ticks and it's labels
+            var ticks = svg.append("g").selectAll("g")
+                    .data(chord.groups)
+                .enter().append("g").selectAll("g")
+                    .data(groupTicks)
+                .enter().append("g")
+                    .attr("transform", function(d) {
+                        return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                                + "translate(" + outerRadius + ",0)";
+                    });
 
-	for(var i = 0; i < 64; i++){
-		names[i] = "s"+i;
-		}
-		//COLORS
-	var fill = d3.scale.ordinal()
-			.domain(d3.range(5)) // number of colors
-			.range(["#000000", "#FFDD89", "#957244", "#F26223","#E0E000"]);
+                //tick markers lengths (don't mess with y, it change's the angle of the lines)
+            ticks.append("line")
+                    .attr("x1", 1)
+                    .attr("y1", 0)
+                    .attr("x2", 1)
+                    .attr("y2", 0)
 
-		//Setting the Dimensions
-	var svg = d3.select("body").append("svg")
-			.attr("width", width)
-			.attr("height", height)
-		.append("g")
-			.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                    .style("stroke", "#000");
 
+                //tick labels
+            ticks.append("text")
+                    .attr("x", 8)
+                    .attr("dy", ".35em")
+                    .attr("text-anchor", function(d) {return d.angle > Math.PI ? "end" : null;})
+                    .attr("transform", function(d) {return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
+                    })
+                    //.text(function(d) { return d.label; });
 
+            var chordgroups = chord.groups()
+                .map(function(d){ d.angle = (d.startAngle + d.endAngle)/2; return d;});
 
+            svg.selectAll(".text")
+                .data(chordgroups)
+                .enter()
+                .append("text")
+                .attr("class", "text")
+                .attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
+                .attr("transform", function(d){
 
-		//Setting Colors and Mouseover/Mouseout effects
-	svg.append("g").selectAll("path")
-			.data(chord.groups)
-		.enter().append("path")
-			.style("fill", function(d) { return fill(d.index); })
-			.style("stroke", function(d) { return fill(d.index); })
-			.attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
-			.on("mouseover", fade(.2))
-			.on("mouseout", fade(1));
+                    //rotate each label around the circle
+                    return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" +
+                             "translate(" + (outerRadius + 10) + ")" +
+                             (d.angle > Math.PI ? "rotate(180)" : "");
 
-		//chord labels taken from http://mbostock.github.io/d3/talk/20111018/chord.html
-	/*
-	svg.append("svg:text")
-		.each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
-				.attr("dy", ".35em")
-				.attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-				.attr("transform", function(d) {
-					return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-							+ "translate(" + (r0 + 26) + ")"
-							+ (d.angle > Math.PI ? "rotate(180)" : "");
-				})
-				.text(function(d) { return nameByIndex[d.index]; });
-	*/
-		//Ticks and it's labels
-	var ticks = svg.append("g").selectAll("g")
-			.data(chord.groups)
-		.enter().append("g").selectAll("g")
-			.data(groupTicks)
-		.enter().append("g")
-			.attr("transform", function(d) {
-				return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-						+ "translate(" + outerRadius + ",0)";
-			});
+                })
+                .text(function(d){
+                    //set the text content
+                    return names[d.index];
+                })
 
-		//tick markers lengths (don't mess with y, it change's the angle of the lines)
-	ticks.append("line")
-			.attr("x1", 1)
-			.attr("y1", 0)
-			.attr("x2", 1)
-			.attr("y2", 0)
-
-			.style("stroke", "#000");
-
-		//tick labels
-	ticks.append("text")
-			.attr("x", 8)
-			.attr("dy", ".35em")
-			.attr("text-anchor", function(d) {return d.angle > Math.PI ? "end" : null;})
-			.attr("transform", function(d) {return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
-			})
-			//.text(function(d) { return d.label; });
-
-	var chordgroups = chord.groups()
-		.map(function(d){ d.angle = (d.startAngle + d.endAngle)/2; return d;});
-
-	svg.selectAll(".text")
-		.data(chordgroups)
-		.enter()
-		.append("text")
-		.attr("class", "text")
-		.attr("text-anchor", function(d) { return d.angle > Math.PI ? "end" : null; })
-		.attr("transform", function(d){
-
-			//rotate each label around the circle
-			return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" +
-					 "translate(" + (outerRadius + 10) + ")" +
-					 (d.angle > Math.PI ? "rotate(180)" : "");
-
-		})
-		.text(function(d){
-			//set the text content
-			return names[d.index];
-		})
-
-		//
-	svg.append("g")
-			.attr("class", "chord")
-		.selectAll("path")
-			.data(chord.chords)
-		.enter().append("path")
-			.attr("d", d3.svg.chord().radius(innerRadius))
-			.style("fill", function(d) { return fill(d.target.index); })
-			.style("opacity", 1);
+                //
+            svg.append("g")
+                    .attr("class", "chord")
+                .selectAll("path")
+                    .data(chord.chords)
+                .enter().append("path")
+                    .attr("d", d3.svg.chord().radius(innerRadius))
+                    .style("fill", function(d) { return fill(d.target.index); })
+                    .style("opacity", 1);
 
 
-	// Returns an array of tick angles and labels, given a group.
-	function groupTicks(d) {
-		var k = (d.endAngle - d.startAngle) / d.value;
-		return d3.range(0, d.value, 1).map(function(v, i) {
-			return {
-				angle: v * k + d.startAngle,
-				label: i % 1 ? null : v
-			};
-		});
-	}
+            // Returns an array of tick angles and labels, given a group.
+            function groupTicks(d) {
+                var k = (d.endAngle - d.startAngle) / d.value;
+                return d3.range(0, d.value, 1).map(function(v, i) {
+                    return {
+                        angle: v * k + d.startAngle,
+                        label: i % 1 ? null : v
+                    };
+                });
+            }
 
 
-	// Returns an event handler for fading a given chord group.
-	function fade(opacity) {
-		return function(g, i) {
-			svg.selectAll(".chord path")
-					.filter(function(d) { return d.source.index != i && d.target.index != i; })
-				.transition()
-					.style("opacity", opacity);
-		};
-	}
-});
+            // Returns an event handler for fading a given chord group.
+            function fade(opacity) {
+                return function(g, i) {
+                    svg.selectAll(".chord path")
+                            .filter(function(d) { return d.source.index != i && d.target.index != i; })
+                        .transition()
+                            .style("opacity", opacity);
+                };
+            }
+        });
 
-// //Random Matrix. May need to refresh if there's an error
-// for(var i = 0; i < 32; i++){
-// 	var first = Math.floor((Math.random() * 64)+1);
-// 	var second = Math.floor((Math.random() * 64)+1);
-// 	matrix[first][second] = (Math.random()%5)-2.5;
-// 	matrix[second][first] = (Math.random()%5)-2.5;
-// }
-
-</script>
+    </script>
+</body>
+</html>
