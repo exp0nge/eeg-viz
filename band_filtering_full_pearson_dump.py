@@ -26,7 +26,7 @@ def calculate_pearson(start):
             full_pearson.append(pearsonr(band[start], band[index])[0])
 
 
-def dump_z_score_pearson():
+def dump_band_pearson():
     with open('band_full_pearson.dump', 'wb') as f:
         cPickle.dump(full_pearson, f)
 
@@ -35,4 +35,4 @@ if __name__ == '__main__':
     for i in range(63):
         print 'Calculating Channel %s' % i
         calculate_pearson(i)
-    dump_z_score_pearson()
+    dump_band_pearson()
