@@ -43,7 +43,7 @@ new_matrix = []
 
 for index, row in (enumerate(matrix)):
 	if(index!=63):
-		new_matrix.append(row[2400000:-1])
+		new_matrix.append(row[2400000:3000000])
 # print len(new_matrix[0])
 eeg = signal.detrend(np.array(new_matrix),type='constant')
 
@@ -76,7 +76,7 @@ for row in range(len(new_matrix)):
 s3 = pd.DataFrame(mat3).transpose()
 
 band = np.array(s3)
-band.dump('band5.dumps')
+#band.dump('band5.dumps')
 
 # In[ ]:
 #s.plot(legend=False)

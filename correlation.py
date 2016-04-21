@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
+from scipy import signal
 
 # coding: utf-8
 
@@ -16,6 +17,17 @@ m = loadmat('s5d2nap_justdata.mat')
 # In[3]:
 
 matrix = m['s5d2nap']
+
+low = 0.3
+high = 30
+fs = 1000
+
+lowcut = low/(0.5*fs)
+highcut = high/(0.5*fs)
+
+#bandpass
+b3, a3 = signal.butter(2, [lowcut,highcut], 'band')
+w3, h3 = signal.freqs(b3, a3)
 
 new_matrix = []
 for index, row in enumerate(matrix):
@@ -64,4 +76,4 @@ for i in range(1):
 print channels_data[0]
 # fig.savefig('s0_vs_all.svg')
 # fig.tight_layout()
-# plt.show()
+plt.show()
