@@ -43,7 +43,7 @@ body {
             
             d3.json('/media/pearson_10s_z_2016.json', function(data){
                 var MAX_ROW_TIME = data['data'].length;
-                d3.select("#timeInput").attr("max", MAX_ROW_TIME);
+                d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
                 console.log('data retrieved');
                 // TODO: Find min/max of data and alter bound
                 // WHATIF: change the matrix that chord is using, will the chord update auto?
@@ -220,7 +220,7 @@ body {
                     }
                 }
 
-                generateChord(0.1, 0);
+                generateChord(d3.select("#boundInput")[0][0].value, d3.select("#timeInput")[0][0].value);
 
                 d3.select('#boundInput').on('change', function(e){
                     d3.selectAll('.chordDiagram').remove();  
