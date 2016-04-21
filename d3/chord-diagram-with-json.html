@@ -19,7 +19,8 @@ body {
 
 </style>
 <body>
-    <input id="boundInput" type="number" step="0.01" max="0.99" min="0.0">
+    <input id="boundInput" type="number" step="0.01" max="0.99" min="0.0" value="0.01">
+    <input id="timeInput" type="number" min="0" step="1" value="0">
     <br>
 <!--    <input type="hidden" class="range-slider" value="1" />-->
     <br>
@@ -41,14 +42,16 @@ body {
             });
             
             d3.json('/media/pearson_10s_z_2016.json', function(data){
-                                console.log(data['data']);
-
+                var MAX_ROW_TIME = data['data'].length;
+                d3.select("#timeInput").attr("max", MAX_ROW_TIME);
                 console.log('data retrieved');
                 // TODO: Find min/max of data and alter bound
-                var generateMatrix = function(){
+                // WHATIF: change the matrix that chord is using, will the chord update auto?
+                // TODO: get actual labels
+                var generateMatrix = function(ROW_TIME){
                     var START_COLUMN = 0;
                     var END_COLUMN = 63;
-                    var ROW_TIME = 0;
+                    var ROW_TIME = ROW_TIME;
                     var matrix = new Array(63);
                     // insert into node 0 first
                     var rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
@@ -73,9 +76,9 @@ body {
                     return matrix;
                 }
 
-                var generateChord = function(bound){
+                var generateChord = function(bound, time){
                     // take copy of matrix
-                    var alteredMatrix = generateMatrix();
+                    var alteredMatrix = generateMatrix(time);
                     // threshold test
                     for (var i = 0; i < 63; i++){
                         for (var j = 0; j < 63; j++){
@@ -217,14 +220,19 @@ body {
                     }
                 }
 
-                //generateChord(matrix, 0.9);
+                generateChord(0.1, 0);
 
                 d3.select('#boundInput').on('change', function(e){
                     d3.selectAll('.chordDiagram').remove();  
-                    generateChord(this.value);
-                    });
-
+                    // TODO: fix this caputr
+                    generateChord(this.value, d3.select("#timeInput")[0][0].value);
                 });
+                d3.select("#timeInput").on('change', function(e){
+                    d3.selectAll('.chordDiagram').remove();
+                    generateChord(d3.select("#boundInput")[0][0].value, this.value);
+                });
+                
+            });
         });
 
     </script>
