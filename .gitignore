@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # Us
-*.ipynb
+
 *.mat
 .ipynb_checkpoints
 .idea

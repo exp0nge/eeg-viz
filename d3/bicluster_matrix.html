@@ -93,7 +93,8 @@
     }
     
     
-    d3.json('/media/pearson_10s_z_2016.json', function(data){
+//    d3.json('/media/pearson_10s_z_2016.json', function(data){
+        d3.json('/media/sorted_pearson_10s_z_2016.json', function(data){
         console.log('DATA LOADED')
         var ROWS = data['data'].length;
         var COLUMNS = data['data'][0].length;
