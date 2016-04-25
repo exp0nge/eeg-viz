@@ -73,10 +73,14 @@ mat3 = []
 for row in range(len(new_matrix)):
 	mat3.append(signal.lfilter(b3, a3, eeg[row]))
 
-s3 = pd.DataFrame(mat3).transpose()
+stemp = pd.DataFrame(mat3).clip(-600,600)
+
+
+s3 = pd.DataFrame(stemp).transpose()
 
 band = np.array(s3)
-#band.dump('band5.dumps')
+
+band.dump('band5cut.dumps')
 
 # In[ ]:
 #s.plot(legend=False)

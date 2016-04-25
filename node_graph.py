@@ -5,13 +5,12 @@ import numpy as np
 from scipy import signal
 band1 = np.load('band1.dumps').transpose()
 
-band1 = np.load('band1.dumps').transpose()
-band2 = np.load('band2.dumps').transpose()
-band3 = np.load('band3.dumps').transpose()
-band4 = np.load('band4.dumps').transpose()
-band5 = np.load('band5.dumps').transpose()
-
-print len(band5)
+band1 = np.load('band1cut.dumps').transpose()
+band2 = np.load('band2cut.dumps').transpose()
+band3 = np.load('band3cut.dumps').transpose()
+band4 = np.load('band4cut.dumps').transpose()
+band5 = np.load('band5cut.dumps').transpose()
+band6 = np.load('band6cut.dumps').transpose()
 
 
 fig1 = plt.figure()
@@ -34,10 +33,13 @@ channels_data = [[0 for i in range(64)] for i in range(64)]
 i=1
 x = np.arange(0,3383.767,.001)
 
-band = np.zeros(shape=(64,3383767))
+band = np.zeros(shape=(63,3383767))
 
-for index, column in enumerate(band1):
-    band[index] = np.concatenate((band1[index],band2[index],band3[index],band4[index],band5[index]))
+for index, column in enumerate(band3):
+    band[index] = np.concatenate((band1[index],band2[index],band3[index],band4[index],band5[index],band6[index]))
+
+band[band>500] = 0
+band[band<-500] = 0
 
 for index, column in enumerate(band):
     #band = band +
@@ -62,6 +64,6 @@ for index, column in enumerate(band):
         ax.set_xlabel('Sec')
         ax.plot(x, column)
     i+=1
-bandpass = np.array(band.transpose())
-bandpass.dump('bandFull.dumps')
+#bandpass = np.array(band.transpose())
+#bandpass.dump('bandcut3.dumps')
 plt.show()
