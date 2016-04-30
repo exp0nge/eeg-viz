@@ -16,6 +16,17 @@ body {
   stroke: #000;
   stroke-width: .5px;
 }
+    
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
 
 </style>
 <body>
@@ -25,6 +36,7 @@ body {
 <!--    <input type="hidden" class="range-slider" value="1" />-->
     <br>
     <div id="chord"></div>
+    <div id="scatter"></div>
     <script type="application/javascript" src="d3.min.js"></script>
     <script type="application/javascript" src="jquery.min.js"></script>
     <script type="application/javascript" src="jquery.range-min.js"></script>
@@ -41,7 +53,7 @@ body {
                 isRange : true
             });
             
-            d3.json('/media/pearson_10s_z_2016.json', function(data){
+            d3.json('/media/pearson_5sec_bandpass_clipped_2016.json', function(data){
                 var MAX_ROW_TIME = data['data'].length;
                 d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
                 console.log('data retrieved');
@@ -72,8 +84,17 @@ body {
                             matrix[i].splice(j, 0, matrix[j][i]);
                         }
                     }
-
+                    console.log(data['data'].length);
+                    console.log(data['data'][0].length);
                     return matrix;
+                }
+                
+                var generateScatter = function(idx, time) {
+                    d3.select('#scatter').html("");
+                    var scatterData = generateMatrix(time)[idx];
+                    
+                    
+                    
                 }
 
                 var generateChord = function(bound, time){
@@ -124,7 +145,7 @@ body {
 
 
 
-
+                            
                         //Setting Colors and Mouseover/Mouseout effects
                     svg.append("g").selectAll("path")
                             .data(chord.groups)
@@ -133,7 +154,12 @@ body {
                             .style("stroke", function(d) { return fill(d.index); })
                             .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
                             .on("mouseover", fade(.2))
-                            .on("mouseout", fade(1));
+                            .on("mouseout", fade(1))
+                            .on("click", function(d) {
+                                console.log(d['index']);
+                                generateScatter(d['index'], time);
+                                
+                    });
 
                         //Ticks and it's labels
                     var ticks = svg.append("g").selectAll("g")
