@@ -94,12 +94,11 @@
     
     
 //    d3.json('/media/pearson_10s_z_2016.json', function(data){
-        d3.json('/media/pearson_30s_band_2016.json', function(data){
+        d3.json('/media/pearson_30s_z_2016.json', function(data){
         console.log('DATA LOADED')
         var ROWS = data['data'].length;
         var COLUMNS = data['data'][0].length;
             
-//        var COLUMNS = 50;
         var matrix = [];
         for (var i = 0; i < ROWS; i++){
             for (var j = 0; j < COLUMNS; j++){
@@ -119,6 +118,7 @@
             }
         }
         console.log('MATRIX LOADED');
+            
         var MIN = d3.min(matrix, function(d, i){return d.value;}),
             margin = { top: 0, right: 0, bottom: 0, left: 0 },
             cellSize = 5,
