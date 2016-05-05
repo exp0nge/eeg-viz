@@ -118,15 +118,15 @@
         <p><span id="value"></p>
     </div>
     <div id="chord" style="float: left;"></div>
-    <div style="float: right;"><img src="/media/5710.EEG_electrode_position.jpg" width="450px"></div>
-    <div id="matrix"></div>
+    <div style="float: right;"><img src="/media/eeg_nodes.gif" width="320px"></div>
+    <div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
     <script type="application/javascript" src="d3.min.js"></script>
     <script type="application/javascript" src="jquery.min.js"></script>
     <script type="application/javascript" src="jquery.range-min.js"></script>
     <script type="application/javascript">
         $(document).ready(function(){
             var NODE_LABELS = labels = ['FP1', 'Fz', 'F3', 'F7', 'FT9', 'FC5', 'FC1', 'C3', 'T7', 'CP5', 'CP1', 'Pz', 'P3', 'P7', 'O1', 'Oz', 'O2', 'P4', 'P8', 'TP10', 'CP6', 'CP2', 'Cz', 'C4', 'T8', 'FT10', 'FC6', 'FC2', 'F4', 'F8', 'FP2', 'AF7', 'AF3', 'AFz', 'F1', 'F5', 'FT7', 'FC3', 'FCz', 'C1', 'C5', 'TP7', 'CP3', 'P1', 'P5', 'PO7', 'PO3', 'POz', 'PO4', 'PO8', 'P6', 'P2', 'CPz', 'CP4', 'TP8', 'C6', 'C2', 'FC4', 'FT8', 'F6', 'F2', 'LOC', 'ROC'];
-            d3.json('/media/pearson_30s_band_2016.json', function(data){
+            d3.json('/media/cos_z_score_10s_2016.json', function(data){
                 var ROWS = data['data'].length;
         var COLUMNS = data['data'][0].length;
             
@@ -314,7 +314,10 @@
                             if (alteredMatrix[i][j] < 0){
                                 alteredMatrix[i][j] = Math.abs(alteredMatrix[i][j]);
                             }
-                            if (alteredMatrix[i][j] < bound || alteredMatrix[i][j] == 1.0){
+                            if (alteredMatrix[i][j] <= bound){
+                                alteredMatrix[i][j] = 0;
+                            }
+                            if (alteredMatrix[i][j] == 1.0) {
                                 alteredMatrix[i][j] = 0;
                             }
                         }
