@@ -2,6 +2,9 @@ import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import signal
+from scipy.stats import zscore
+
 # coding: utf-8
 
 # In[1]:
@@ -43,7 +46,7 @@ new_matrix = []
 
 for index, row in (enumerate(matrix)):
 	if(index!=63):
-		new_matrix.append(row[2400000:3000000])
+		new_matrix.append(row[3000000:-1])
 # print len(new_matrix[0])
 eeg = signal.detrend(np.array(new_matrix),type='constant')
 
@@ -73,21 +76,22 @@ mat3 = []
 for row in range(len(new_matrix)):
 	mat3.append(signal.lfilter(b3, a3, eeg[row]))
 
+#stemp = pd.DataFrame(mmat3).clip(-600,600)
 stemp = pd.DataFrame(mat3).clip(-600,600)
 
-
-s3 = pd.DataFrame(stemp).transpose()
+s3 = pd.DataFrame(zscore(stemp)).transpose()
 
 band = np.array(s3)
 
-band.dump('band5cut.dumps')
+band.dump('band1MedCutZscore.dumps')
 
 # In[ ]:
 #s.plot(legend=False)
 #s1.plot(legend=False)
 #s2.plot(legend=False)
+print "\n Huh?"
 s3.plot(legend=False)
-
+print "Did that work?"
 # cumsum() adds the value of each channel and displays the sum
 # s = s.cumsum()
 # s.plot()

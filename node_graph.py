@@ -12,6 +12,13 @@ band4 = np.load('band4cut.dumps').transpose()
 band5 = np.load('band5cut.dumps').transpose()
 band6 = np.load('band6cut.dumps').transpose()
 
+band1M = np.load('band1MedCut.dumps').transpose()
+band2M = np.load('band2MedCut.dumps').transpose()
+band3M = np.load('band3MedCut.dumps').transpose()
+band4M = np.load('band4MedCut.dumps').transpose()
+band5M = np.load('band5MedCut.dumps').transpose()
+band6M = np.load('band6MedCut.dumps').transpose()
+
 
 fig1 = plt.figure()
 fig2 = plt.figure()
@@ -36,10 +43,8 @@ x = np.arange(0,3383.767,.001)
 band = np.zeros(shape=(63,3383767))
 
 for index, column in enumerate(band3):
-    band[index] = np.concatenate((band1[index],band2[index],band3[index],band4[index],band5[index],band6[index]))
+    band[index] = np.concatenate((band1[index]-band1M[index],band2[index]-band2M[index],band3[index]-band3M[index],band4[index]-band4M[index],band5[index]-band5M[index],band6[index]-band6M[index]))
 
-band[band>500] = 0
-band[band<-500] = 0
 
 for index, column in enumerate(band):
     #band = band +
