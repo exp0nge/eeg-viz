@@ -1,147 +1,158 @@
+<!doctype HTML>
+<!- http://bl.ocks.org/ianyfchang/8119685 ->
 <html>
 <head>
-<meta charset="utf-8">
-     <style>
-      /* disable text selection */
-      svg *::selection {
-         background : transparent;
-      }
-     
-      svg *::-moz-selection {
-         background:transparent;
-      } 
-     
-      svg *::-webkit-selection {
-         background:transparent;
-      }
-      rect.selection {
-        stroke          : #333;
-        stroke-dasharray: 4px;
-        stroke-opacity  : 0.5;
-        fill            : transparent;
-      }
+    <meta charset="utf-8">
+    <style>
+        /* disable text selection */
+        svg *::selection {
+            background: transparent;
+        }
 
-      rect.cell-border {
-        stroke: #eee;
-        stroke-width:0.3px;   
-      }
+        svg *::-moz-selection {
+            background: transparent;
+        }
 
-      rect.cell-selected {
-        stroke: rgb(51,102,153);
-        stroke-width:0.5px;   
-      }
+        svg *::-webkit-selection {
+            background: transparent;
+        }
 
-      rect.cell-hover {
-        stroke: #F00;
-        stroke-width:0.3px;   
-      }
+        rect.selection {
+            stroke: #333;
+            stroke-dasharray: 4px;
+            stroke-opacity: 0.5;
+            fill: transparent;
+        }
 
-      text.mono {
-        font-size: 9pt;
-        font-family: Consolas, courier;
-        fill: #aaa;
-      }
+        rect.cell-border {
+            stroke: #eee;
+            stroke-width: 0.3px;
+        }
 
-      text.text-selected {
-        fill: #000;
-      }
+        rect.cell-selected {
+            stroke: rgb(51, 102, 153);
+            stroke-width: 0.5px;
+        }
 
-      text.text-highlight {
-        fill: #c00;
-      }
-      text.text-hover {
-        fill: #00C;
-      }
-      #tooltip {
-        position: absolute;
-        width: 200px;
-        height: auto;
-        padding: 10px;
-        background-color: white;
-        -webkit-border-radius: 10px;
-        -moz-border-radius: 10px;
-        border-radius: 10px;
-        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        pointer-events: none;
-      }
+        rect.cell-hover {
+            stroke: #F00;
+            stroke-width: 0.3px;
+        }
 
-      #tooltip.hidden {
-        display: none;
-      }
+        text.mono {
+            font-size: 9pt;
+            font-family: Consolas, courier;
+            fill: #aaa;
+        }
 
-      #tooltip p {
-        margin: 0;
-        font-family: sans-serif;
-        font-size: 12px;
-        line-height: 20px;
-      }
+        text.text-selected {
+            fill: #000;
+        }
+
+        text.text-highlight {
+            fill: #c00;
+        }
+
+        text.text-hover {
+            fill: #00C;
+        }
+
+        #tooltip {
+            position: absolute;
+            width: 200px;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+        #tooltip.hidden {
+            display: none;
+        }
+
+        #tooltip p {
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 12px;
+            line-height: 20px;
+        }
     </style>
 
 </head>
 <body>
 <script src="/d3/d3.min.js"></script>
-    <div id="tooltip" class="hidden">
-        <p><span id="value"></p>
-    </div>
-    <div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
+<div id="tooltip" class="hidden">
+    <p><span id="value"></p>
+</div>
+<div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
 
 <script type="text/javascript">
     function getRandomArbitrary(min, max) {
         return Math.random() * (max - min) + min;
     }
-    
-    
-//    d3.json('/media/pearson_10s_z_2016.json', function(data){
-        d3.json('/media/pearson_30s_z_2016.json', function(data){
-        console.log('DATA LOADED')
+
+
+    //    d3.json('/media/pearson_10s_z_2016.json', function(data){
+    d3.json('/media/json/z-score-pearson-matrix-30s.json', function (data) {
+        console.log('DATA LOADED');
         var ROWS = data['data'].length;
         var COLUMNS = data['data'][0].length;
-            
+
         var matrix = [];
-        for (var i = 0; i < ROWS; i++){
-            for (var j = 0; j < COLUMNS; j++){
+        for (var i = 0; i < ROWS; i++) {
+            for (var j = 0; j < COLUMNS; j++) {
                 if (data['data'][i][j] < 0) {
-                        matrix.push({
+                    matrix.push({
                         row: i,
                         col: j,
-                        value: Math.abs(data['data'][i][j])
+                        value: data['data'][i][j]
                     });
                 } else {
                     matrix.push({
-                    row: i,
-                    col: j,
-                    value: data['data'][i][j]
-                });
+                        row: i,
+                        col: j,
+                        value: data['data'][i][j]
+                    });
                 }
             }
         }
         console.log('MATRIX LOADED');
-            
-        var MIN = d3.min(matrix, function(d, i){return d.value;}),
-            margin = { top: 0, right: 0, bottom: 0, left: 0 },
-            cellSize = 5,
-            legendElementWidth = cellSize * 2.5,
-            col_number = d3.max(matrix,function(d, i){return d.col;}),
-            row_number = d3.max(matrix,function(d, i){return d.row;}),
-            WIDTH = cellSize * col_number,
-            HEIGHT = cellSize * row_number,
-            hcrow = d3.range(1, row_number+1, 1),
-            hccol = d3.range(1, col_number+1, 1),
-            colors = ['#005824','#1A693B','#347B53','#4F8D6B','#699F83','#83B09B','#9EC2B3','#B8D4CB','#D2E6E3','#EDF8FB','#FFFFFF','#F1EEF6','#E6D3E1','#DBB9CD','#D19EB9','#C684A4','#BB6990','#B14F7C','#A63467','#9B1A53','#91003F'],
-            colorScale = d3.scale.quantile()
-                .domain([-1, 0, 1])
-                .range(colors)
-            rowSortOrder = false,
-            colSortOrder = false;
-        
-        
+
+        var MIN = d3.min(matrix, function (d, i) {
+                    return d.value;
+                }),
+                margin = {top: 0, right: 0, bottom: 0, left: 0},
+                cellSize = 5,
+                legendElementWidth = cellSize * 2.5,
+                col_number = d3.max(matrix, function (d, i) {
+                    return d.col;
+                }),
+                row_number = d3.max(matrix, function (d, i) {
+                    return d.row;
+                }),
+                WIDTH = cellSize * col_number,
+                HEIGHT = cellSize * row_number,
+                hcrow = d3.range(1, row_number + 1, 1),
+                hccol = d3.range(1, col_number + 1, 1),
+                colors = ['#005824', '#1A693B', '#347B53', '#4F8D6B', '#699F83', '#83B09B', '#9EC2B3', '#B8D4CB', '#D2E6E3', '#EDF8FB', '#FFFFFF', '#F1EEF6', '#E6D3E1', '#DBB9CD', '#D19EB9', '#C684A4', '#BB6990', '#B14F7C', '#A63467', '#9B1A53', '#91003F'],
+                colorScale = d3.scale.quantile()
+                        .domain([-1, 0, 1])
+                        .range(colors)
+        rowSortOrder = false,
+                colSortOrder = false;
+
+
         var svg = d3.select("#matrix").append("svg")
-            .attr("width", WIDTH)
-            .attr("height", HEIGHT)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                .attr("width", WIDTH)
+                .attr("height", HEIGHT)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 //          var rowLabels = svg.append("g")
 //              .selectAll(".rowLabelg")
@@ -169,59 +180,91 @@
 
 
         var heat = svg.append("g").attr("class", "g3")
-            .selectAll(".cellg")
-            .data(matrix, function(d, i){
-                return d.row+":"+d.col;
-            })
-            .enter()
-            .append("rect")
-            .attr("x", function(d) { return hccol.indexOf(d.col) * cellSize; })
-            .attr("y", function(d) { return hcrow.indexOf(d.row) * cellSize; })
-            .attr("width", cellSize)
-            .attr("height", cellSize)
-            .style("fill", function(d, idx){
-                return colorScale(d.value);
-            })
-           .on("mouseover", function(d){
-           //highlight text
-           d3.select(this).classed("cell-hover",true);
-           d3.selectAll(".rowLabel").classed("text-highlight",function(r,ri){ return ri==(d.row-1);});
-           d3.selectAll(".colLabel").classed("text-highlight",function(c,ci){ return ci==(d.col-1);});
+                .selectAll(".cellg")
+                .data(matrix, function (d, i) {
+                    return d.row + ":" + d.col;
+                })
+                .enter()
+                .append("rect")
+                .attr("x", function (d) {
+                    return hccol.indexOf(d.col) * cellSize;
+                })
+                .attr("y", function (d) {
+                    return hcrow.indexOf(d.row) * cellSize;
+                })
+                .attr("class", 'cell')
+                .attr("width", cellSize)
+                .attr("height", cellSize)
+                .style("fill", function (d, idx) {
+                    return colorScale(d.value);
+                })
+                .on("mouseover", function (d) {
+                    //highlight text
+                    d3.select(this).classed("cell-hover", true);
+                    d3.selectAll(".rowLabel").classed("text-highlight", function (r, ri) {
+                        return ri == (d.row - 1);
+                    });
+                    d3.selectAll(".colLabel").classed("text-highlight", function (c, ci) {
+                        return ci == (d.col - 1);
+                    });
 
-           //Update the tooltip position and value
-           d3.select("#tooltip")
-               .style("left", (d3.event.pageX+10) + "px")
-                .style("top", (d3.event.pageY-10) + "px")
-                .select("#value")
-                .text("data:"+d.value+"\nrow-col-idx:"+d.col+","+d.row+"\ncell-xy "+this.x.baseVal.value+", "+this.y.baseVal.value);  
-                //Show the tooltip
-                d3.select("#tooltip").classed("hidden", false);
-            })
-            .on("mouseout", function(){
-               d3.select(this).classed("cell-hover",false);
-               d3.selectAll(".rowLabel").classed("text-highlight",false);
-               d3.selectAll(".colLabel").classed("text-highlight",false);
-               d3.select("#tooltip").classed("hidden", true);
-            });
-        
-              var legend = svg.selectAll(".legend")
-                  .data([d3.range(MIN, 0, col_number)])
-                  .enter().append("g")
-                  .attr("class", "legend");
+                    //Update the tooltip position and value
+                    d3.select("#tooltip")
+                            .style("left", (d3.event.pageX + 10) + "px")
+                            .style("top", (d3.event.pageY - 10) + "px")
+                            .select("#value")
+                            .text("data:" + d.value + "\nrow-col-idx:" + d.col + "," + d.row + "\ncell-xy " + this.x.baseVal.value + ", " + this.y.baseVal.value);
+                    //Show the tooltip
+                    d3.select("#tooltip").classed("hidden", false);
+                })
+                .on("mouseout", function () {
+                    d3.select(this).classed("cell-hover", false);
+                    d3.selectAll(".rowLabel").classed("text-highlight", false);
+                    d3.selectAll(".colLabel").classed("text-highlight", false);
+                    d3.select("#tooltip").classed("hidden", true);
+                });
 
-              legend.append("rect")
-                .attr("x", function(d, i) { return legendElementWidth * i; })
-                .attr("y", HEIGHT+(cellSize*2))
+        var legend = svg.selectAll(".legend")
+                .data([d3.range(MIN, 0, col_number)])
+                .enter().append("g")
+                .attr("class", "legend");
+
+        legend.append("rect")
+                .attr("x", function (d, i) {
+                    return legendElementWidth * i;
+                })
+                .attr("y", HEIGHT + (cellSize * 2))
                 .attr("width", legendElementWidth)
                 .attr("height", cellSize)
-                .style("fill", function(d, i) { return colors[i]; });
+                .style("fill", function (d, i) {
+                    return colors[i];
+                });
 
-              legend.append("text")
+        legend.append("text")
                 .attr("class", "mono")
-                .text(function(d) { return d; })
+                .text(function (d) {
+                    return d;
+                })
                 .attr("width", legendElementWidth)
-                .attr("x", function(d, i) { return legendElementWidth * i; })
-                .attr("y", HEIGHT + (cellSize*4));
+                .attr("x", function (d, i) {
+                    return legendElementWidth * i;
+                })
+                .attr("y", HEIGHT + (cellSize * 4));
+        var bicluster = function (originalData) {
+            d3.json('/media/json/fitted-indices-z-score-pearson-30s.json', function (indices) {
+                console.log(indices['data'].length);
+                svg.selectAll('.cell')
+                        .transition()
+                        .duration(1000)
+                        .style("fill", function (d, idx) {
+                            var rowCol = indices['data'][idx];
+                            return colorScale(originalData[rowCol[0]][rowCol[1]]);
+                        });
+                console.log('done fitting')
+            });
+        };
+        bicluster(data['data']);
+
     });
 </script>
 </body>
