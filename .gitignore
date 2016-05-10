@@ -8,7 +8,11 @@ __pycache__/
 *.mat
 .ipynb_checkpoints
 .idea
+<<<<<<< HEAD
 *.dump
+=======
+ssim_data
+>>>>>>> 51502dc598c9e79326407b5d15302c706bb6cdf2
 
 # C extensions
 *.so
