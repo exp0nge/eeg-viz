@@ -129,7 +129,7 @@
                 }),
                 margin = {top: 0, right: 0, bottom: 0, left: 0},
                 cellSize = 5,
-                legendElementWidth = cellSize * 2.5,
+                legendElementWidth = cellSize * 10,
                 col_number = d3.max(matrix, function (d, i) {
                     return d.col;
                 }),
@@ -226,7 +226,7 @@
                 });
 
         var legend = svg.selectAll(".legend")
-                .data([d3.range(MIN, 0, col_number)])
+                .data([d3.range(-0.99, 0, 0.99)])
                 .enter().append("g")
                 .attr("class", "legend");
 
@@ -251,6 +251,7 @@
                     return legendElementWidth * i;
                 })
                 .attr("y", HEIGHT + (cellSize * 4));
+
         var bicluster = function (originalData) {
             d3.json('/media/json/fitted-indices-z-score-pearson-30s.json', function (indices) {
                 console.log(indices['data'].length);

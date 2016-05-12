@@ -1,144 +1,240 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Chord Diagram with Bound Test</title>
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="jquery.range.css">
+    <style>
+        body {
+            background-color: ghostwhite;
+        }
+
+        .chord path {
+            fill-opacity: .67;
+            stroke: #000;
+            stroke-width: .5px;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .dot {
+            stroke: #000;
+        }
+
+        /* disable text selection */
+
+        svg *::selection {
+            background: transparent;
+        }
+
+        svg *::-moz-selection {
+            background: transparent;
+        }
+
+        svg *::-webkit-selection {
+            background: transparent;
+        }
+
+        rect.selection {
+            stroke: #333;
+            stroke-dasharray: 4px;
+            stroke-opacity: 0.5;
+            fill: transparent;
+        }
+
+        rect.cell-border {
+            stroke: #eee;
+            stroke-width: 0.3px;
+        }
+
+        rect.cell-selected {
+            stroke: rgb(51, 102, 153);
+            stroke-width: 0.5px;
+        }
+
+        rect.cell-hover {
+            stroke: #F00;
+            stroke-width: 0.3px;
+        }
+
+        text.mono {
+            font-size: 9pt;
+            font-family: Consolas, courier;
+            fill: #aaa;
+        }
+
+        text.text-selected {
+            fill: #000;
+        }
+
+        text.text-highlight {
+            fill: #c00;
+        }
+
+        text.text-hover {
+            fill: #00C;
+        }
+
+        #tooltip {
+            position: absolute;
+            width: 200px;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+        }
+
+        #tooltip.hidden {
+            display: none;
+        }
+
+        #tooltip p {
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 12px;
+            line-height: 20px;
+        }
+    </style>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>EEG Sleep Data Visualization</title>
+
+
 </head>
-<meta charset="utf-8">
-<style>
-    body {
-        font: 10px sans-serif;
-    }
-
-    .chord path {
-        fill-opacity: .67;
-        stroke: #000;
-        stroke-width: .5px;
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .dot {
-        stroke: #000;
-    }
-
-    /* disable text selection */
-
-    svg *::selection {
-        background: transparent;
-    }
-
-    svg *::-moz-selection {
-        background: transparent;
-    }
-
-    svg *::-webkit-selection {
-        background: transparent;
-    }
-
-    rect.selection {
-        stroke: #333;
-        stroke-dasharray: 4px;
-        stroke-opacity: 0.5;
-        fill: transparent;
-    }
-
-    rect.cell-border {
-        stroke: #eee;
-        stroke-width: 0.3px;
-    }
-
-    rect.cell-selected {
-        stroke: rgb(51, 102, 153);
-        stroke-width: 0.5px;
-    }
-
-    rect.cell-hover {
-        stroke: #F00;
-        stroke-width: 0.3px;
-    }
-
-    text.mono {
-        font-size: 9pt;
-        font-family: Consolas, courier;
-        fill: #aaa;
-    }
-
-    text.text-selected {
-        fill: #000;
-    }
-
-    text.text-highlight {
-        fill: #c00;
-    }
-
-    text.text-hover {
-        fill: #00C;
-    }
-
-    #tooltip {
-        position: absolute;
-        width: 200px;
-        height: auto;
-        padding: 10px;
-        background-color: white;
-        -webkit-border-radius: 10px;
-        -moz-border-radius: 10px;
-        border-radius: 10px;
-        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        pointer-events: none;
-    }
-
-    #tooltip.hidden {
-        display: none;
-    }
-
-    #tooltip p {
-        margin: 0;
-        font-family: sans-serif;
-        font-size: 12px;
-        line-height: 20px;
-    }
-</style>
 
 <body>
-<br>
-<input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
-<br>
-<div id="tooltip" class="hidden">
-    <p><span id="value"></span></p>
+
+<div class="parallax-container">
+    <div class="parallax"><img src="/media/EEG.jpg"></div>
 </div>
-<div id="chord" width="300px;" style="float: left;"></div>
-<div style="float: right;"><img src="/media/eeg_nodes.gif" width="320px"></div>
-<div>
-    <button id="cluster">Sort by cluster</button>
+<!--<div class="progress" id="preloader" style="padding-top: 20%; margin: 0;">-->
+<!--<div class="indeterminate"></div>-->
+<!--</div>-->
+<div id="content">
+    <div id="tooltip" class="hidden card-panel">
+        <p><span id="value"></span></p>
+    </div>
+    <h2 class="card-panel center">Networks in Electroencephalogram (EEG) Sleep Data</h2>
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h3>What</h3>
+                    <p>I am a very simple card. I am good at containing small bits of information.
+                        I am convenient because I require little markup to use effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-panel white">
+        <div id="matrixContainer" class="container">
+            <h3 class="center">Edges <span class="chip">Node vs Node</span> vs Time <span
+                    class="chip">30s Intervals</span>
+                Matrix Visualization</h3>
+            <div class="row">
+                <div class="input-field col s6">
+                    <select id="preprocessorSelect">
+                        <option value="1" selected>Z Score</option>
+                        <option value="2">Bandpass</option>
+                        <option value="3">Median Filter</option>
+                    </select>
+                    <label>Preprocessor</label>
+                </div>
+                <div class="input-field col s6">
+                    <select id="postprocessorSelect">
+                        <option value="1" selected>Pearson</option>
+                        <option value="2">Option 2</option>
+                        <option value="3">Option 3</option>
+                    </select>
+                    <label>Postprocessor</label>
+                </div>
+            </div>
+            <a class="waves-effect waves-light btn red" id="cluster"><i class="material-icons left">clear_all</i>Sort
+                by cluster</a>
+        </div>
+        <br>
+        <div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
+    </div>
+
+    <div class="card-panel white">
+        <div class="container" id="chordContainer">
+            <h3>Chord Diagram: Correlations Between Nodes</h3>
+            <h5>Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
+            <input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
+            <div id="chord"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h3>Why</h3>
+                    <p>I am a very simple card. I am good at containing small bits of information.
+                        I am convenient because I require little markup to use effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h3>How</h3>
+                    <p>I am a very simple card. I am good at containing small bits of information.
+                        I am convenient because I require little markup to use effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h3>Significance</h3>
+                    <p>I am a very simple card. I am good at containing small bits of information.
+                        I am convenient because I require little markup to use effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
+
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
 <script type="application/javascript" src="d3.min.js"></script>
-<script type="application/javascript" src="jquery.min.js"></script>
 <script type="application/javascript" src="jquery.range-min.js"></script>
 <script type="application/javascript">
     $(document).ready(function () {
         var NODE_LABELS = labels = ['FP1', 'Fz', 'F3', 'F7', 'FT9', 'FC5', 'FC1', 'C3', 'T7', 'CP5', 'CP1', 'Pz', 'P3', 'P7', 'O1', 'Oz', 'O2', 'P4', 'P8', 'TP10', 'CP6', 'CP2', 'Cz', 'C4', 'T8', 'FT10', 'FC6', 'FC2', 'F4', 'F8', 'FP2', 'AF7', 'AF3', 'AFz', 'F1', 'F5', 'FT7', 'FC3', 'FCz', 'C1', 'C5', 'TP7', 'CP3', 'P1', 'P5', 'PO7', 'PO3', 'POz', 'PO4', 'PO8', 'P6', 'P2', 'CPz', 'CP4', 'TP8', 'C6', 'C2', 'FC4', 'FT8', 'F6', 'F2', 'LOC', 'ROC'];
         var EFFECTIVE_NODES = 61;
-        var MARKS;
-        var PHASES_SCALE;
-        d3.json('/media/json/phases_of_sleep.json', function (data) {
-            console.log(data);
-            PHASES_SCALE = d3.scale.linear()
-                    .domain(data['domain'])
-                    .range(data['times']);
-            MARKS = data['marks'];
-        });
+        var boundInput = $('#boundInput');
+        $('.parallax').parallax();
+        $('select').material_select();
         d3.json('/media/json/z-score-pearson-matrix-30s.json', function (data) {
+            var MARKS;
+            var TIMESTEPS;
+            var currentTimestep = $('#timeStep');
+            d3.json('/media/json/phases_of_sleep.json', function (data) {
+                console.log(data);
+                TIMESTEPS = data['timesteps'];
+                MARKS = data['marks'];
+                console.log('marks loaded');
+            });
             var ROWS = data['data'].length;
             var COLUMNS = data['data'][0].length;
 
@@ -240,7 +336,12 @@
                         SELECTED_ROW = d.row;
                         var lowerUpper = boundInput.attr('value').split(',');
                         generateChord(parseFloat(lowerUpper[0]), parseFloat(lowerUpper[1]), d.row);
-                        console.log(MARKS[PHASES_SCALE(SELECTED_ROW * 10)])
+                        var markers = TIMESTEPS[SELECTED_ROW * 30];
+                        currentTimestep.html(SELECTED_ROW);
+                        console.log('----------------------');
+                        for (var i = 0; i < markers.length; i++) {
+                            console.log('PHASE: ', MARKS[markers[i]]);
+                        }
                     });
             var bicluster = function (originalData) {
                 d3.json('/media/json/fitted-indices-z-score-pearson-30s.json', function (indices) {
@@ -259,35 +360,10 @@
                 });
             };
             d3.select('#cluster').on('click', function (e) {
+                $('#cluster').toggleClass('disabled');
                 bicluster(data['data']);
 
             });
-            var legend = svg.selectAll(".legend")
-                    .data([d3.range(MIN, 0, col_number)])
-                    .enter().append("g")
-                    .attr("class", "legend");
-
-            legend.append("rect")
-                    .attr("x", function (d, i) {
-                        return legendElementWidth * i;
-                    })
-                    .attr("y", HEIGHT + (cellSize * 2))
-                    .attr("width", legendElementWidth)
-                    .attr("height", cellSize)
-                    .style("fill", function (d, i) {
-                        return colors[i];
-                    });
-
-            legend.append("text")
-                    .attr("class", "mono")
-                    .text(function (d) {
-                        return d;
-                    })
-                    .attr("width", legendElementWidth)
-                    .attr("x", function (d, i) {
-                        return legendElementWidth * i;
-                    })
-                    .attr("y", HEIGHT + (cellSize * 4));
 
             var MAX_ROW_TIME = data['data'].length;
             d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
@@ -392,7 +468,7 @@
                         .on("mouseout", fade(1))
                         .on("click", function (d) {
                             console.log(d['index']);
-//                            generateScatter(d['index'], time);
+                            generateScatter(d['index'], time);
 
                         });
 
@@ -420,6 +496,7 @@
                 ticks.append("text")
                         .attr("x", 8)
                         .attr("dy", ".35em")
+                        .style('font', '10px sans-serif')
                         .attr("text-anchor", function (d) {
                             return d.angle > Math.PI ? "end" : null;
                         })
@@ -509,7 +586,7 @@
                 to: 0.99,
                 step: 0.01,
                 format: '%s',
-                width: 500,
+                width: $('#chordContainer').width(),
                 showLabels: true,
                 showScale: true,
                 ondragend: function (bound) {
@@ -524,3 +601,4 @@
 </script>
 </body>
 </html>
+        
