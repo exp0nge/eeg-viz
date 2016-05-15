@@ -166,7 +166,7 @@
                     <label>Postprocessor</label>
                 </div>
                 <br>
-                <a class="waves-light waves-effect btn blue"><i class="material-icons left">check</i>
+                <a class="waves-light waves-effect btn blue" id="visualize"><i class="material-icons left">check</i>
                     Visualize</a>
             </div>
             <a class="waves-effect waves-light btn red" id="cluster"><i class="material-icons left">clear_all</i>Sort
@@ -238,6 +238,7 @@
         var preprocessorSelect = $('#preprocessorSelect');
         var postprocessorSelect = $('#postprocessorSelect');
         var clusterButton = $('#cluster');
+        var visualizeButton = $('#visualize');
         var JSON_MEDIA_ROOT = '/media/json/';
         var BANDPASS_DIR = 'band_clipped/';
         var BANDPASS_MED_DIR = 'band_median/';
@@ -312,8 +313,14 @@
                     JSON_MEDIA_ROOT + SSIM_DIR + BANDPASS_Z + 'fitted-indices-band-z-score-pearson-30s.json']
             }
         };
+        visualizeButton.on('click', function (e) {
+            $('#visualize').addClass('disabled');
+            initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
+            console.log(initSelected);
+            generateViz(initSelected[0], initSelected[1]);
+            e.preventDefault();
+        });
         clusterButton.hide();
-        console.log(preprocessorSelect.val(), postprocessorSelect.val());
         boundInput = $('#boundInput');
         chordContainer = $('#chordContainer');
         d3.json('/media/json/phases_of_sleep.json', function (data) {
@@ -330,12 +337,12 @@
                 clusterButton.removeClass('disabled');
                 $('#chord').empty();
                 $('#matrix').empty();
-                var currentTimestep = $('#timeStep');
-                var ROWS = data['data'].length;
-                var COLUMNS = data['data'][0].length;
+                currentTimestep = $('#timeStep');
+                ROWS = data['data'].length;
+                COLUMNS = data['data'][0].length;
 
-                var matrix = [];
-                for (var i = 0; i < ROWS; i++) {
+                matrix = [];
+                for (i = 0; i < ROWS; i++) {
                     for (var j = 0; j < COLUMNS; j++) {
 //                    if (data['data'][i][j] < 0) {
 //                        matrix.push({
@@ -355,9 +362,9 @@
                 }
                 console.log('MATRIX LOADED');
 
-                var MIN = d3.min(matrix, function (d, i) {
-                            return d.value;
-                        }),
+                MIN = d3.min(matrix, function (d, i) {
+                    return d.value;
+                }),
                         margin = {top: 0, right: 0, bottom: 0, left: 0},
                         cellSize = 5,
                         legendElementWidth = cellSize * 2.5,
@@ -377,12 +384,12 @@
                                 .range(colors);
 
 
-                var svg = d3.select("#matrix").append("svg")
+                svg = d3.select("#matrix").append("svg")
                         .attr("width", WIDTH)
                         .attr("height", HEIGHT)
                         .append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                var SELECTED_ROW = 0;
+                SELECTED_ROW = 0;
 
                 heat = svg.append("g").attr("class", "g3")
                         .selectAll(".cellg")
@@ -442,10 +449,13 @@
                                 console.log('PHASE: ', MARKS[markers[i]]);
                             }
                         });
-                var bicluster = function (originalData) {
+                biclustered = false;
+                bicluster = function (originalData) {
+                    clusterButton.addClass('disabled');
                     d3.json(fittedDataPath, function (indices) {
-                        console.log(indices['data'].length);
-                        svg.selectAll('.cell')
+                        console.log(indices['data'].length, originalData.length);
+                        console.log(d3.selectAll('.cell'));
+                        d3.selectAll('.cell')
                                 .style("fill", function (d, idx) {
                                     var rowCol = indices['data'][idx];
                                     matrix[idx] = {
@@ -455,21 +465,23 @@
                                     };
                                     return colorScale(originalData[rowCol[0]][rowCol[1]]);
                                 });
-                        console.log('done fitting')
+                        console.log('done fitting');
+                        biclustered = true;
                     });
                 };
                 clusterButton.on('click', function (e) {
-                    clusterButton.toggleClass('disabled');
-                    bicluster(data['data']);
-
+                     if (!biclustered) {
+                         bicluster(data['data']);
+                     }
+                    e.preventDefault();
                 });
 
-                var MAX_ROW_TIME = data['data'].length;
+                MAX_ROW_TIME = data['data'].length;
                 d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
                 console.log('data retrieved');
                 // TODO: Find min/max of data and alter bound
                 // TODO: get actual labels
-                var generateMatrix = function (ROW_TIME) {
+                generateMatrix = function (ROW_TIME) {
                     var START_COLUMN = 0;
                     var END_COLUMN = 61;
                     var ROW_TIME = ROW_TIME;
@@ -496,12 +508,7 @@
                     return matrix;
                 };
 
-                var generateScatter = function (idx, time) {
-                    d3.select('#scatter').html("");
-                    var scatterData = generateMatrix(time)[idx];
-                };
-
-                var generateChord = function (lowerBound, upperBound, time) {
+                generateChord = function (lowerBound, upperBound, time) {
                     d3.selectAll('.chordDiagram').remove();
                     var alteredMatrix = generateMatrix(time);
                     // threshold test
@@ -522,14 +529,14 @@
                     }
 
 
-                    var chord = d3.layout.chord()
+                    chord = d3.layout.chord()
                             .padding(0.05)
                             .sortSubgroups(d3.descending)
                             .matrix(alteredMatrix);
 
 
                     //DIMENSIONS
-                    var width = 1000,
+                    width = 1000,
                             height = 600,
                             innerRadius = Math.min(width, height) * 0.41,
                             outerRadius = innerRadius * 1.05,
@@ -539,12 +546,12 @@
                         names[i] = NODE_LABELS[i];
                     }
                     //COLORS
-                    var fill = d3.scale.ordinal()
+                    fill = d3.scale.ordinal()
                             .domain(d3.range(5)) // number of colors
                             .range(["#000000", "#FFDD89", "#957244", "#F26223", "#E0E000"]);
 
                     //Setting the Dimensions
-                    var svg = d3.select("#chord").append("svg")
+                    svg = d3.select("#chord").append("svg")
                             .attr("width", width)
                             .attr("height", height)
                             .attr("class", "chordDiagram")
@@ -567,12 +574,11 @@
                             .on("mouseout", fade(1))
                             .on("click", function (d) {
                                 console.log(d['index']);
-                                generateScatter(d['index'], time);
 
                             });
 
                     //Ticks and it's labels
-                    var ticks = svg.append("g").selectAll("g")
+                    ticks = svg.append("g").selectAll("g")
                             .data(chord.groups)
                             .enter().append("g").selectAll("g")
                             .data(groupTicks)
@@ -604,7 +610,7 @@
                             .style('font', '10px sans-serif');
                     //.text(function(d) { return d.label; });
 
-                    var chordgroups = chord.groups()
+                    chordgroups = chord.groups()
                             .map(function (d) {
                                 d.angle = (d.startAngle + d.endAngle) / 2;
                                 return d;
@@ -671,7 +677,7 @@
                 };
 
                 generateChord(0, 0.5, SELECTED_ROW);
-
+                visualizeButton.removeClass('disabled');
 //            d3.select('#boundInput').on('change', function (e) {
 //                console.log('changed');
 //                generateChord(this.value, SELECTED_ROW);
@@ -696,11 +702,11 @@
                     isRange: true
                 });
             });
-        }
+        };
 
         initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
         console.log(initSelected);
-        generateViz(initSelected[0], initSelected[1])
+//        generateViz(initSelected[0], initSelected[1])
 
     });
 
