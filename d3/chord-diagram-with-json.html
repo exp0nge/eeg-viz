@@ -7,10 +7,6 @@
 <meta charset="utf-8">
 <style>
 
-    body {
-        font: 10px sans-serif;
-    }
-
     .chord path {
         fill-opacity: .67;
         stroke: #000;
@@ -226,6 +222,7 @@
                             //set the text content
                             return names[d.index];
                         })
+                        .style('font', '10px sans-serif');
 
                 //
                 svg.append("g")
