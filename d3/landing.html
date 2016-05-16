@@ -523,10 +523,12 @@
                             });
                             console.log('----------------------');
                             $('.badge').html(0);
+                            $('.badge').removeClass('teal');
                             for (var i = 0; i < markers.length; i++) {
                                 console.log('PHASE: ', MARKS[markers[i]]);
                                 markId = $(markToID[MARKS[markers[i]]]);
                                 markId.html(parseInt(markId.html()) + 1);
+                                markId.addClass('teal');
                             }
                         });
                 biclustered = false;
