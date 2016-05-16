@@ -34,14 +34,14 @@ def calculate_pearson(start):
                 if start < index:
                     pearson_5s.append(pearsonr(band[start][j:j+length], band[index][j:j+length])[0])
 
-
-def dump_band_pearson():
-    with open('band_30s_pearson.dump', 'wb') as f:
-        cPickle.dump(pearson_5s, f)
-
-
+# def dump_band_pearson():
+#     with open('band_30s_pearson.dump', 'wb') as f:
+#         cPickle.dump(pearson_5s, f)
+#
+#
 if __name__ == '__main__':
-    for i in range(63):
+    for i in range(2):
         print 'Calculating Channel %s' % i
         calculate_pearson(i)
-    dump_band_pearson()
+        print len(pearson_5s)
+#     dump_band_pearson()
