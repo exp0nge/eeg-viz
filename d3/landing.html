@@ -189,21 +189,21 @@
                         <li class="collection-item">Spindles
                             <span class="badge teal white-text" id="spindle">0</span></li>
                         <li class="collection-item">Markon: w
-                            <span class="badge teal white-text" id="Markon: w">0</span></li>
+                            <span class="badge teal white-text" id="m-on-w">0</span></li>
                         <li class="collection-item">Markoff: w
-                            <span class="badge teal white-text" id="Markoff: w">0</span></li>
+                            <span class="badge teal white-text" id="m-off-w">0</span></li>
                         <li class="collection-item">Markon: 1
-                            <span class="badge teal white-text" id="Markon: 1">0</span></li>
+                            <span class="badge teal white-text" id="m-on-1">0</span></li>
                         <li class="collection-item">Markoff: 1
-                            <span class="badge teal white-text" id="Markoff: 1">0</span></li>
+                            <span class="badge teal white-text" id="m-off-1">0</span></li>
                         <li class="collection-item">Markon: 2
-                            <span class="badge teal white-text" id="Markon: 2">0</span></li>
+                            <span class="badge teal white-text" id="m-on-2">0</span></li>
                         <li class="collection-item">Markoff: 2
-                            <span class="badge teal white-text" id="Markoff: 2">0</span></li>
+                            <span class="badge teal white-text" id="m-off-2">0</span></li>
                         <li class="collection-item">Markon: 3
-                            <span class="badge teal white-text" id="Markon: 3">0</span></li>
+                            <span class="badge teal white-text" id="m-on-3">0</span></li>
                         <li class="collection-item">Markoff: 3
-                            <span class="badge teal white-text" id="Markoff: 3">0</span></li>
+                            <span class="badge teal white-text" id="m-off-3">0</span></li>
                     </ul>
                 </div>
                 <div class="col s6 m6">
@@ -451,7 +451,7 @@
                         .text("-1");
                 svg.append('text')
                         .attr("class", "mono")
-                        .attr("x", margin.left + 300 + legendElementWidth + (colorScale.range().length * 20))
+                        .attr("x", margin.left + 305 + legendElementWidth + (colorScale.range().length * 20))
                         .attr("y", -margin.top / 2)
                         .text("+1");
 
@@ -505,7 +505,18 @@
                             SELECTED_ROW = d.row;
                             var lowerUpper = boundInput.attr('value').split(',');
                             generateChord(parseFloat(lowerUpper[0]), parseFloat(lowerUpper[1]), d.row);
-                            var markers = TIMESTEPS[SELECTED_ROW * 30];
+                            markers = TIMESTEPS[SELECTED_ROW * 30];
+                            markToID = {
+                                'spindle': '#spindle',
+                                'Markon: w': '#m-on-w',
+                                'Markoff: w': '#m-off-w',
+                                'Markoff: 1': '#m-on-1',
+                                'Markon: 1': '#m-off-1',
+                                'Markoff: 2': '#m-on-2',
+                                'Markon: 2': '#m-off-2',
+                                'Markon: 3': '#m-on-3',
+                                'Markoff: 3': '#m-off-3'
+                            };
                             currentTimestep.html(SELECTED_ROW);
                             $('html,body').animate({
                                 scrollTop: chordContainer.offset().top
@@ -513,9 +524,9 @@
                             console.log('----------------------');
                             $('.badge').html(0);
                             for (var i = 0; i < markers.length; i++) {
-                                var markId = $('#' + MARKS[markers[i]]);
-                                markId.html(parseInt(markId.html()) + 1);
                                 console.log('PHASE: ', MARKS[markers[i]]);
+                                markId = $(markToID[MARKS[markers[i]]]);
+                                markId.html(parseInt(markId.html()) + 1);
                             }
                         });
                 biclustered = false;
