@@ -99,7 +99,7 @@
 
 
     //    d3.json('/media/pearson_10s_z_2016.json', function(data){
-    d3.json('/media/json/z-score-pearson-matrix-30s.json', function (data) {
+    d3.json('/media/json/pearson/z_score/z-score-matrix-30s.json', function (data) {
         console.log('DATA LOADED');
         var ROWS = data['data'].length;
         var COLUMNS = data['data'][0].length;
@@ -127,7 +127,7 @@
         var MIN = d3.min(matrix, function (d, i) {
                     return d.value;
                 }),
-                margin = {top: 0, right: 0, bottom: 0, left: 0},
+                margin = {top: 30, right: 0, bottom: 0, left: 30},
                 cellSize = 5,
                 legendElementWidth = cellSize * 10,
                 col_number = d3.max(matrix, function (d, i) {
@@ -153,6 +153,43 @@
                 .attr("height", HEIGHT)
                 .append("g")
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        svg.append('text')
+                .attr("x", margin.left)
+                .attr("class", "mono")
+                .attr("y", -10)
+                .text("Channel vs Channel");
+        svg.append('text')
+                .attr("transform", "rotate(-90)")
+                .attr("class", "mono")
+                .attr("x", -130)
+                .attr("y", -10)
+                .text("Time Interval");
+
+        svg.selectAll(".legend")
+                .append("g")
+                .attr("class", "legend")
+                .data(colorScale.range())
+                .enter()
+                .append("rect")
+                .attr("x", function (d, i) {
+                    return margin.left + 300 + legendElementWidth + (i * 20);
+                })
+                .attr("y", -margin.top)
+                .attr("width", 20)
+                .attr("height", 20)
+                .style("fill", function (d, i) {
+                    return colors[i];
+                });
+        svg.append('text')
+                .attr("class", "mono")
+                .attr("x", 360)
+                .attr("y", -margin.top/2)
+                .text("-1");
+        svg.append('text')
+                .attr("class", "mono")
+                .attr("x", 805)
+                .attr("y", -margin.top/2)
+                .text("+1");
 
 //          var rowLabels = svg.append("g")
 //              .selectAll(".rowLabelg")
@@ -213,7 +250,7 @@
                             .style("left", (d3.event.pageX + 10) + "px")
                             .style("top", (d3.event.pageY - 10) + "px")
                             .select("#value")
-//                            .text("Correlation:" + d.value + "\nrow:" + d.col + ", col:" + d.row);
+                            //                            .text("Correlation:" + d.value + "\nrow:" + d.col + ", col:" + d.row);
                             .text("Correlation:" + matrix[idx].value + "\nTimestep:" + matrix[idx].row + ", col:" + matrix[idx].col);
                     //Show the tooltip
                     d3.select("#tooltip").classed("hidden", false);
@@ -225,32 +262,6 @@
                     d3.select("#tooltip").classed("hidden", true);
                 });
 
-        var legend = svg.selectAll(".legend")
-                .data([d3.range(-0.99, 0, 0.99)])
-                .enter().append("g")
-                .attr("class", "legend");
-
-        legend.append("rect")
-                .attr("x", function (d, i) {
-                    return legendElementWidth * i;
-                })
-                .attr("y", HEIGHT + (cellSize * 2))
-                .attr("width", legendElementWidth)
-                .attr("height", cellSize)
-                .style("fill", function (d, i) {
-                    return colors[i];
-                });
-
-        legend.append("text")
-                .attr("class", "mono")
-                .text(function (d) {
-                    return d;
-                })
-                .attr("width", legendElementWidth)
-                .attr("x", function (d, i) {
-                    return legendElementWidth * i;
-                })
-                .attr("y", HEIGHT + (cellSize * 4));
 
         var bicluster = function (originalData) {
             d3.json('/media/json/fitted-indices-z-score-pearson-30s.json', function (indices) {

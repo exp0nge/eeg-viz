@@ -141,7 +141,7 @@
     </div>
     <div class="card-panel white">
         <div id="matrixContainer" class="container">
-            <h3 class="center">Edges <span class="chip">Node vs Node</span> vs Time <span
+            <h3 class="center">Edges <span class="chip">Channel vs Channel</span> vs Time <span
                     class="chip">30s Intervals</span>
                 Matrix Visualization</h3>
             <div class="row">
@@ -182,6 +182,34 @@
             <h5>Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
             <input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
             <div id="chord"></div>
+            <hr>
+            <div class="row">
+                <div class="col s6 m6">
+                    <ul class="collection">
+                        <li class="collection-item">Spindles
+                            <span class="badge teal white-text" id="spindle">0</span></li>
+                        <li class="collection-item">Markon: w
+                            <span class="badge teal white-text" id="Markon: w">0</span></li>
+                        <li class="collection-item">Markoff: w
+                            <span class="badge teal white-text" id="Markoff: w">0</span></li>
+                        <li class="collection-item">Markon: 1
+                            <span class="badge teal white-text" id="Markon: 1">0</span></li>
+                        <li class="collection-item">Markoff: 1
+                            <span class="badge teal white-text" id="Markoff: 1">0</span></li>
+                        <li class="collection-item">Markon: 2
+                            <span class="badge teal white-text" id="Markon: 2">0</span></li>
+                        <li class="collection-item">Markoff: 2
+                            <span class="badge teal white-text" id="Markoff: 2">0</span></li>
+                        <li class="collection-item">Markon: 3
+                            <span class="badge teal white-text" id="Markon: 3">0</span></li>
+                        <li class="collection-item">Markoff: 3
+                            <span class="badge teal white-text" id="Markoff: 3">0</span></li>
+                    </ul>
+                </div>
+                <div class="col s6 m6">
+                    <img src="/media/eeg_nodes.gif">
+                </div>
+            </div>
         </div>
     </div>
     <div class="row container">
@@ -365,7 +393,7 @@
                 MIN = d3.min(matrix, function (d, i) {
                     return d.value;
                 }),
-                        margin = {top: 0, right: 0, bottom: 0, left: 0},
+                        margin = {top: 30, right: 0, bottom: 0, left: 30},
                         cellSize = 5,
                         legendElementWidth = cellSize * 2.5,
                         col_number = d3.max(matrix, function (d, i) {
@@ -389,6 +417,44 @@
                         .attr("height", HEIGHT)
                         .append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                svg.append('text')
+                        .attr("x", margin.left)
+                        .attr("class", "mono")
+                        .attr("y", -10)
+                        .text("Channel vs Channel");
+                svg.append('text')
+                        .attr("transform", "rotate(-90)")
+                        .attr("class", "mono")
+                        .attr("x", -130)
+                        .attr("y", -10)
+                        .text("Time Interval");
+
+                svg.selectAll(".legend")
+                        .append("g")
+                        .attr("class", "legend")
+                        .data(colorScale.range())
+                        .enter()
+                        .append("rect")
+                        .attr("x", function (d, i) {
+                            return margin.left + 300 + legendElementWidth + (i * 20);
+                        })
+                        .attr("y", -margin.top)
+                        .attr("width", 20)
+                        .attr("height", 20)
+                        .style("fill", function (d, i) {
+                            return colors[i];
+                        });
+                svg.append('text')
+                        .attr("class", "mono")
+                        .attr("x", margin.left + 300 + legendElementWidth - 20)
+                        .attr("y", -margin.top / 2)
+                        .text("-1");
+                svg.append('text')
+                        .attr("class", "mono")
+                        .attr("x", margin.left + 300 + legendElementWidth + (colorScale.range().length * 20))
+                        .attr("y", -margin.top / 2)
+                        .text("+1");
+
                 SELECTED_ROW = 0;
 
                 heat = svg.append("g").attr("class", "g3")
@@ -445,7 +511,10 @@
                                 scrollTop: chordContainer.offset().top
                             });
                             console.log('----------------------');
+                            $('.badge').html(0);
                             for (var i = 0; i < markers.length; i++) {
+                                var markId = $('#' + MARKS[markers[i]]);
+                                markId.html(parseInt(markId.html()) + 1);
                                 console.log('PHASE: ', MARKS[markers[i]]);
                             }
                         });
@@ -470,9 +539,9 @@
                     });
                 };
                 clusterButton.on('click', function (e) {
-                     if (!biclustered) {
-                         bicluster(data['data']);
-                     }
+                    if (!biclustered) {
+                        bicluster(data['data']);
+                    }
                     e.preventDefault();
                 });
 
