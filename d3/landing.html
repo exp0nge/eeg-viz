@@ -267,6 +267,7 @@
         var postprocessorSelect = $('#postprocessorSelect');
         var clusterButton = $('#cluster');
         var visualizeButton = $('#visualize');
+        var biclustered;
         var JSON_MEDIA_ROOT = '/media/json/';
         var BANDPASS_DIR = 'band_clipped/';
         var BANDPASS_MED_DIR = 'band_median/';
@@ -307,8 +308,8 @@
                     JSON_MEDIA_ROOT + COSINE_DIR + MEDIAN_DIR + 'fitted-indices-median-sub-cos-30s_float.json'],
                 "spearman": [JSON_MEDIA_ROOT + SPEARMAN_DIR + MEDIAN_DIR + 'median-filter-matrix-30s.json',
                     JSON_MEDIA_ROOT + SPEARMAN_DIR + MEDIAN_DIR + 'fitted-indices-median-filter-pearson-30s.json'],
-                "ssim": [JSON_MEDIA_ROOT + SSIM_DIR + MEDIAN_DIR + 'z-score-matrix-30s.json',
-                    JSON_MEDIA_ROOT + SSIM_DIR + MEDIAN_DIR + 'fitted-indices-z-score-pearson-30s.json']
+                "ssim": [JSON_MEDIA_ROOT + SSIM_DIR + MEDIAN_DIR + 'median-filter-matrix-30s.json',
+                    JSON_MEDIA_ROOT + SSIM_DIR + MEDIAN_DIR + 'fitted-indices-median-filter-pearson-30s.json']
             },
             "bandpass-median": {
                 "pearson": [JSON_MEDIA_ROOT + PEARSON_DIR + BANDPASS_MED_DIR + 'band-median-matrix-30s.json',
@@ -342,6 +343,7 @@
             }
         };
         visualizeButton.on('click', function (e) {
+            biclustered = false;
             $('#visualize').addClass('disabled');
             initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
             console.log(initSelected);
@@ -531,8 +533,8 @@
                                 markId.addClass('teal');
                             }
                         });
-                biclustered = false;
                 bicluster = function (originalData) {
+                    biclustered = true;
                     clusterButton.addClass('disabled');
                     d3.json(fittedDataPath, function (indices) {
                         console.log(indices['data'].length, originalData.length);
@@ -548,7 +550,6 @@
                                     return colorScale(originalData[rowCol[0]][rowCol[1]]);
                                 });
                         console.log('done fitting');
-                        biclustered = true;
                     });
                 };
                 clusterButton.on('click', function (e) {
@@ -786,8 +787,8 @@
             });
         };
 
-        initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
-        console.log(initSelected);
+//        initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
+//        console.log(initSelected);
 //        generateViz(initSelected[0], initSelected[1])
 
     });
