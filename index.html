@@ -152,11 +152,9 @@
                         channels <code>ROC</code>, <code>LOC</code>,
                         and <code>AUX1</code> do not contribute to correlation, they have been dropped.
                         <code>ROC/LOC</code> can be used to remove
-                        some artifacts, like eye blinks. Unfortunately, this visualization does not use ICA <a
-                                href="http://sccn.ucsd.edu/~jung/artifact.html">
-                            [2]</a> to remove artifacts.</p>
+                        some artifacts, like eye blinks.</p>
                     <br>
-                    <a class="btn blue waves-effect waves-light start-tour">Start Tour</a>
+                    <a class="btn waves-effect waves-light start-tour blue">Start Tour</a>
                 </div>
             </div>
         </div>
@@ -165,7 +163,7 @@
         <div id="matrixContainer" class="container">
             <h3 class="center">Edges <span class="chip">Channel vs Channel</span> vs Time <span
                     class="chip">30s Intervals</span>
-                Matrix Visualization</h3>
+                Matrix</h3>
             <div class="row form-inline">
                 <div class="input-field col s5  step-1">
                     <select id="preprocessorSelect">
@@ -289,8 +287,13 @@
             <div class="card">
                 <div class="card-content">
                     <h4>Significance</h4>
-                    <p>I am a very simple card. I am good at containing small bits of information.
-                        I am convenient because I require little markup to use effectively.</p>
+                    <div>
+                        By finding networks during EEG sessions, we can:
+                        <ol>
+                            <li>Explore which node is active during a certain time step or stage of sleep.</li>
+                            <li>Further analyze which parts of the brain work together at certain time steps.</li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </div>
@@ -376,7 +379,7 @@
             'subtract from the original data to reduce outliers in the data. SciPy\'s <code>signal.medfiltr</code> ' +
             'was used for this preprocessing step. This ultimately reduces large outliers which will throw our ' +
             'postprocessors off.',
-            'z': 'Using z score allows us to subtract the mean and divide by the standard deviation. SciPy\'s' +
+            'z': 'Using z score allows us to subtract the mean and divide by the standard deviation. SciPy\'s ' +
             '<code>stats.mstats.zscore</code> was used for this preprocessing step. Ultimately, this allows us to ' +
             'remove some outliers.'
         };
@@ -403,7 +406,7 @@
             'This similarity measure shows how much ' +
             'a value changes at a timestep.',
             'cosine': 'Cosine similarity measure uses best fit line for two plots of data, then the angle is ' +
-            'calculated, and the cosine of the angle is then taken. If the angles are close, the cosine gets closer to' +
+            'calculated, and the cosine of the angle is then taken. If the angles are close, the cosine gets closer to ' +
             '1, otherwise it will get get closer to 0. This is one of the most popular similarity measures and it ' +
             'seemed applicable. Scikit-learn\'s <code>metrics.pairwise.cosine_similarity</code> was used.'
         };
