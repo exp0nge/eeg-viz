@@ -133,14 +133,16 @@
         <div class="col s12">
             <div class="card">
                 <div class="card-content">
-                    <h3>What is this?</h3>
+                    <h4>What is this?</h4>
                     <p>Electroencephalography (EEG) is a method to record electrical activity of the brain. Electrodes
-                        are placed on different parts of the scalp. Voltages are then measured and all 64 channels (nodes)
+                        are placed on different parts of the scalp. Voltages are then measured and all 64 channels
+                        (nodes)
                         <a href="http://www.bem.fi/book/13/13.htm">[1]</a>
                         provide a point of data every millisecond. This means that there will be 64,000 points per
-                        second. This
-                        is challenging to visualize because of the high number of dimensions. This visualization shows
-                        correlations between channels at the full interval on 30s timesteps. Since the last three
+                        second. This is challenging to visualize because of the high number of dimensions.
+                        This visualization shows
+                        correlations between channels at the full interval on 30s timesteps for one session.
+                        Since the last three
                         channels ROC, LOC,
                         and AUX1 do not contribute to correlation, they have been dropped. ROC/LOC can be used to remove
                         some artifacts, like eye blinks. Unfortunately, this visualization does not use ICA <a
@@ -229,7 +231,53 @@
         <div class="col s12">
             <div class="card">
                 <div class="card-content">
-                    <h3>Why</h3>
+                    <h4>Why</h4>
+                    <div>
+                        The main goals of the project are as follows: <br>
+                        <ol>
+                            <li><strong>Analyze</strong>
+                                <ol>
+                                    <li>Networks at different timesteps</li>
+                                    <li>Explore phases of sleep in those timesteps</li>
+                                </ol>
+                            </li>
+                            <li><strong>Query</strong>
+                                <ol>
+                                    <li>Compare correlated channels at different timesteps</li>
+                                    <li>Identify networks in the data</li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row container">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h4>How</h4>
+                    <strong>Preprocessing</strong>
+                    <div id="preprocessing-reason"></div>
+                    <strong>Post-processing</strong>
+                    <div id="postprocessing-reason"></div>
+                    <strong>Visualization</strong>
+                    <div>
+                        The two visualizations, matrix and chord, were generated using D3. Tooltips were used to show
+                        correlation values, the column, and row numbers for the matrix visualization. The matrix
+                        visualization is very intensive since it draws 213683 (113 timesteps and 1891 edges)
+                        individual rectangles.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row container">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h4>Significance</h4>
                     <p>I am a very simple card. I am good at containing small bits of information.
                         I am convenient because I require little markup to use effectively.</p>
                 </div>
@@ -240,31 +288,29 @@
         <div class="col s12">
             <div class="card">
                 <div class="card-content">
-                    <h3>How</h3>
-                    <p>I am a very simple card. I am good at containing small bits of information.
-                        I am convenient because I require little markup to use effectively.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row container">
-        <div class="col s12">
-            <div class="card">
-                <div class="card-content">
-                    <h3>Significance</h3>
-                    <p>I am a very simple card. I am good at containing small bits of information.
-                        I am convenient because I require little markup to use effectively.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row container">
-        <div class="col s12">
-            <div class="card">
-                <div class="card-content">
-                    <h3>Contributions</h3>
-                    <p>I am a very simple card. I am good at containing small bits of information.
-                        I am convenient because I require little markup to use effectively.</p>
+                    <h4>About & Contributions</h4>
+                    <div>
+                        This visualization project was a semester long project for
+                        <a href="http://www-cs.ccny.cuny.edu/~grossberg/teaching.html">Data Visualization (CSc
+                            59969)</a>
+                        at The City College of New York.
+
+                        We would like to thank <a href="https://www.ccny.cuny.edu/profiles/timothy-ellmore">Professor
+                        Timothy Ellmore</a>
+                        for giving us access to this EEG dataset. Additionally, this would not have been possible
+                        without the mentorship of <a href="http://www-cs.ccny.cuny.edu/~grossberg/">Professor Michael
+                        Grossberg</a>.
+                    </div>
+                    <br>
+                    <div>
+                        Authors
+                        <ul class="collection">
+                            <li class="collection-item"><a href="https://exp0nge.github.io">MD R. Islam</a></li>
+                            <li class="collection-item"><a href="#">Fioger Shahollari</a></li>
+                            <li class="collection-item"><a href="#">Enan Rahman</a></li>
+                            <li class="collection-item"><a href="#">Paul Tan</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -291,6 +337,8 @@
         var postprocessorSelect = $('#postprocessorSelect');
         var clusterButton = $('#cluster');
         var visualizeButton = $('#visualize');
+        var preprocessingReason = $('#preprocessing-reason');
+        var postprocessingReason = $('#postprocessing-reason');
         var biclustered;
         var JSON_MEDIA_ROOT = '/media/json/';
         var BANDPASS_DIR = 'band_clipped/';
@@ -304,6 +352,29 @@
         var PEARSON_DIR = 'pearson/';
         var SPEARMAN_DIR = 'spearman/';
         var SSIM_DIR = 'ssim/';
+        var PREPROCESSING_REASONS = {};
+        var POSTPROCESSING_REASONS = {
+            'pearson': 'Pearson correlation measures the linear correlation between 2 sets of data and returns a ' +
+            'value in a range between -1 and +1. A Pearson correlation of -1 means the 2 sets have complete negative ' +
+            'correlation, 0 means no correlation at all and +1 means complete positive correlation. ' +
+            'SciPy\'s stats.pearsonr was used to calculate this value. This allows us to illustrate linear ' +
+            'relationships between two nodes.',
+            'spearman': 'Spearman correlation measures the monotonic correlation between 2 sets of data and returns ' +
+            'a value in a range between -1 and +1. A Spearman correlation of -1 means the 2 sets have complete ' +
+            'negative correlation, 0 means no correlation at all and +1 means complete positive correlation. We used ' +
+            'Spearman correlation because we thought it would complement Pearson correlation well, since Spearman ' +
+            'isn\'t based on the linearity of the data. SciPy\'s stats.spearmanr was used. This measure shows us a ' +
+            'monotonic relationship between two nodes and show what Pearson correlation might’ve had trouble showing.',
+            'ssim': 'Structural similarity, or SSIM, is often used to measure the similarity between 2 images and ' +
+            'returns a value in a range between -1 and +1. A SSIM value of -1 means the 2 sets of data have no ' +
+            'resemblance and +1 means the data sets are identical to each other. ' +
+            'Scikit-learn has skimage.measure.compare_ssim for this measure. This similarity measure shows how much ' +
+            'a value changes at a timestep.',
+            'cosine': 'Cosine similarity measure uses best fit line for two plots of data, then the angle is ' +
+            'calculated, and the cosine of the angle is then taken. If the angles are close, the cosine gets closer to' +
+            '1, otherwise it will get get closer to 0. This is one of the most popular similarity measures and it ' +
+            'seemed applicable. Scikit-learn\'s metrics.pairwise.cosine_similarity was used.'
+        };
         var PROCESSED_JSON = {
             "z": {
                 "pearson": [JSON_MEDIA_ROOT + PEARSON_DIR + Z_DIR + 'z-score-matrix-30s.json',
@@ -370,6 +441,7 @@
             biclustered = false;
             $('#visualize').addClass('disabled');
             initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
+            postprocessingReason.html(POSTPROCESSING_REASONS[postprocessorSelect.val()]);
             console.log(initSelected);
             generateViz(initSelected[0], initSelected[1]);
             e.preventDefault();
@@ -782,7 +854,6 @@
                         };
                     }
                 };
-
                 generateChord(0, 0.5, SELECTED_ROW);
                 visualizeButton.removeClass('disabled');
 //            d3.select('#boundInput').on('change', function (e) {
