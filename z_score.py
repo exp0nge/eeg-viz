@@ -8,11 +8,20 @@ from scipy import stats
 from scipy.io import loadmat
 from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
 
+<<<<<<< HEAD
 # m = loadmat('s5d2nap_justdata.mat')
 #
 # matrix = m['s5d2nap']
 matrix = None
 print 'Data loaded'
+=======
+import cPickle
+
+m = loadmat('s5d2nap_justdata.mat')
+
+matrix = m['s5d2nap']
+print('Data loaded')
+>>>>>>> 51502dc598c9e79326407b5d15302c706bb6cdf2
 
 
 def calculate_pearson_correlation(data_matrix, store_matrix, start):
@@ -130,6 +139,7 @@ def dump_raw_z_scores():
 
 
 if __name__ == '__main__':
+<<<<<<< HEAD
     z_scores = np.load('raw_z_npdump.dump')
     plt.title('Z Score Biclustering')
     spectral_model = SpectralBiclustering()
@@ -138,3 +148,13 @@ if __name__ == '__main__':
     fit_data = fit_data[:, np.argsort(spectral_model.column_labels_)]
     plt.matshow(fit_data, cmap=plt.cm.Blues)
     plt.savefig('z_score_bicluster.svg')
+=======
+    # plot_biclustering_with_pearson(30000000000)
+    # plot_biclustering_raw_data(60000)
+    # plot_biclustering_raw_data(60000, t=True)
+    # plot_coclusters_raw_data(60000)
+    # plot_coclusters_raw_data(60000, t=True)
+    # plot_biclusters_n_intervals(15000)
+    dump_raw_z_scores()
+    print(z_score)
+>>>>>>> 51502dc598c9e79326407b5d15302c706bb6cdf2
