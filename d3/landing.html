@@ -9,6 +9,11 @@
             background-color: ghostwhite;
         }
 
+        code {
+            font-family: Courier, 'New Courier', monospace;
+            font-size: 12px;
+        }
+
         .chord path {
             fill-opacity: .67;
             stroke: #000;
@@ -143,8 +148,9 @@
                         This visualization shows
                         correlations between channels at the full interval on 30s timesteps for one session.
                         Since the last three
-                        channels ROC, LOC,
-                        and AUX1 do not contribute to correlation, they have been dropped. ROC/LOC can be used to remove
+                        channels <code>ROC</code>, <code>LOC</code>,
+                        and <code>AUX1</code> do not contribute to correlation, they have been dropped.
+                        <code>ROC/LOC</code> can be used to remove
                         some artifacts, like eye blinks. Unfortunately, this visualization does not use ICA <a
                                 href="http://sccn.ucsd.edu/~jung/artifact.html">
                             [2]</a> to remove artifacts.</p>
@@ -357,23 +363,25 @@
             'pearson': 'Pearson correlation measures the linear correlation between 2 sets of data and returns a ' +
             'value in a range between -1 and +1. A Pearson correlation of -1 means the 2 sets have complete negative ' +
             'correlation, 0 means no correlation at all and +1 means complete positive correlation. ' +
-            'SciPy\'s stats.pearsonr was used to calculate this value. This allows us to illustrate linear ' +
+            'SciPy\'s <code>stats.pearsonr</code> was used to calculate this value. This allows us to illustrate linear ' +
             'relationships between two nodes.',
             'spearman': 'Spearman correlation measures the monotonic correlation between 2 sets of data and returns ' +
             'a value in a range between -1 and +1. A Spearman correlation of -1 means the 2 sets have complete ' +
             'negative correlation, 0 means no correlation at all and +1 means complete positive correlation. We used ' +
             'Spearman correlation because we thought it would complement Pearson correlation well, since Spearman ' +
-            'isn\'t based on the linearity of the data. SciPy\'s stats.spearmanr was used. This measure shows us a ' +
+            'isn\'t based on the linearity of the data. SciPy\'s <code>stats.spearmanr</code> was used. ' +
+            'This measure shows us a ' +
             'monotonic relationship between two nodes and show what Pearson correlation might’ve had trouble showing.',
             'ssim': 'Structural similarity, or SSIM, is often used to measure the similarity between 2 images and ' +
             'returns a value in a range between -1 and +1. A SSIM value of -1 means the 2 sets of data have no ' +
             'resemblance and +1 means the data sets are identical to each other. ' +
-            'Scikit-learn has skimage.measure.compare_ssim for this measure. This similarity measure shows how much ' +
+            'Scikit-learn has <code>skimage.measure.compare_ssim</code> for this measure. ' +
+            'This similarity measure shows how much ' +
             'a value changes at a timestep.',
             'cosine': 'Cosine similarity measure uses best fit line for two plots of data, then the angle is ' +
             'calculated, and the cosine of the angle is then taken. If the angles are close, the cosine gets closer to' +
             '1, otherwise it will get get closer to 0. This is one of the most popular similarity measures and it ' +
-            'seemed applicable. Scikit-learn\'s metrics.pairwise.cosine_similarity was used.'
+            'seemed applicable. Scikit-learn\'s <code>metrics.pairwise.cosine_similarity</code> was used.'
         };
         var PROCESSED_JSON = {
             "z": {
