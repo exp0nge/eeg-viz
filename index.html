@@ -112,7 +112,7 @@
         }
     </style>
     <!-- Compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
     <link rel="stylesheet" href="d3/shepherd-theme-arrows.css">
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -125,7 +125,7 @@
 <body>
 
 <div class="parallax-container">
-    <div class="parallax"><img src="/media/EEG.jpg"></div>
+    <div class="parallax"><img src="media/EEG.jpg"></div>
 </div>
 <!--<div class="progress" id="preloader" style="padding-top: 20%; margin: 0;">-->
 <!--<div class="indeterminate"></div>-->
@@ -191,7 +191,7 @@
                     <a class="waves-light waves-effect btn blue" id="visualize">Visualize</a>
                 </div>
             </div>
-            <a class="waves-effect waves-light btn red" id="cluster"><i class="material-icons left">clear_all</i>Sort
+            <a class="waves-effect waves-light btn red step-3" id="cluster"><i class="material-icons left">clear_all</i>Sort
                 by cluster</a>
         </div>
         <br>
@@ -201,9 +201,9 @@
     <div class="card-panel white">
         <div class="container" id="chordContainer">
             <h3>Correlations Between Channels</h3>
-            <h5 class="step-3">Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
+            <h5 class="step-4">Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
             <input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
-            <div id="chord"></div>
+            <div id="chord">Click <code><a href="#visualize">Visualize</a></code> to populate this field.</div>
             <hr>
             <div class="row">
                 <div class="col s6 m6">
@@ -229,7 +229,7 @@
                     </ul>
                 </div>
                 <div class="col s6 m6">
-                    <img src="/media/eeg_nodes.gif">
+                    <img src="media/eeg_nodes.gif">
                 </div>
             </div>
         </div>
@@ -266,9 +266,13 @@
                 <div class="card-content">
                     <h4>How</h4>
                     <strong>Preprocessing</strong>
-                    <div id="preprocessing-reason"></div>
+                    <div id="preprocessing-reason">Click <code><a href="#visualize">Visualize</a></code> to populate
+                        this field.
+                    </div>
                     <strong>Post-processing</strong>
-                    <div id="postprocessing-reason"></div>
+                    <div id="postprocessing-reason">Click <code><a href="#visualize">Visualize</a></code> to populate
+                        this field.
+                    </div>
                     <strong>Visualization</strong>
                     <div>
                         The two visualizations, matrix and chord, were generated using D3. Tooltips were used to show
@@ -304,7 +308,8 @@
 
                         We would like to thank <a href="https://www.ccny.cuny.edu/profiles/timothy-ellmore">Professor
                         Timothy Ellmore</a>
-                        for giving us access to this EEG dataset. Additionally, this would not have been possible
+                        for giving us access to this EEG dataset and providing us guidance through this project.
+                        Additionally, this would not have been possible
                         without the mentorship of <a href="http://www-cs.ccny.cuny.edu/~grossberg/">Professor Michael
                         Grossberg</a>.
                     </div>
@@ -313,8 +318,9 @@
                         Authors
                         <ul class="collection">
                             <li class="collection-item"><a href="https://exp0nge.github.io">MD R. Islam</a></li>
-                            <li class="collection-item"><a href="#">Fioger Shahollari</a></li>
-                            <li class="collection-item"><a href="#">Enan Rahman</a></li>
+                            <li class="collection-item"><a href="https://gitlab.com/Fioger">Fioger Shahollari</a></li>
+                            <li class="collection-item"><a href="https://www.linkedin.com/in/enan-rahman-a53499a3">Enan
+                                Rahman</a></li>
                             <li class="collection-item"><a href="#">Paul Tan</a></li>
                         </ul>
                     </div>
@@ -325,13 +331,15 @@
 </div>
 
 <!--Import jQuery before materialize.js-->
-<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="application/javascript" src="d3/jquery-2.2.3.min.js"></script>
 <!-- Compiled and minified JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
+<script type="application/javascript" src="d3/materialize.min.js"></script>
 <script type="application/javascript" src="d3/d3.min.js"></script>
 <script type="application/javascript" src="d3/jquery.range-min.js"></script>
 <script type="application/javascript">
     $(document).ready(function () {
+        var PROCESSED_JSON;
+        var POSTPROCESSING_REASONS;
         var initSelected;
         var MARKS;
         var TIMESTEPS;
@@ -347,7 +355,7 @@
         var preprocessingReason = $('#preprocessing-reason');
         var postprocessingReason = $('#postprocessing-reason');
         var biclustered;
-        var JSON_MEDIA_ROOT = '/media/json/';
+        var JSON_MEDIA_ROOT = 'media/json/';
         var BANDPASS_DIR = 'band_clipped/';
         var BANDPASS_MED_DIR = 'band_median/';
         var BANDPASS_Z = 'band_z_score/';
@@ -359,8 +367,23 @@
         var PEARSON_DIR = 'pearson/';
         var SPEARMAN_DIR = 'spearman/';
         var SSIM_DIR = 'ssim/';
-        var PREPROCESSING_REASONS = {};
-        var POSTPROCESSING_REASONS = {
+        var PREPROCESSING_REASONS = {
+            'bandpass': 'Bandpass filter removes the data that lays outside of frequencies 0.3-30 Hz; this frequency ' +
+            'is where the significant EEG data is. This reduces noises such as muscle movement. SciPy\'s ' +
+            '<code>signal.butter</code> can be used for low, high, and bandpass filters. By doing this we can reduce ' +
+            'the noise so our correlations are more accurate.',
+            'median': 'Using median filter dampens the amplitude of each of the channels. This is then used to ' +
+            'subtract from the original data to reduce outliers in the data. SciPy\'s <code>signal.medfiltr</code> ' +
+            'was used for this preprocessing step. This ultimately reduces large outliers which will throw our ' +
+            'postprocessors off.',
+            'z': 'Using z score allows us to subtract the mean and divide by the standard deviation. SciPy\'s' +
+            '<code>stats.mstats.zscore</code> was used for this preprocessing step. Ultimately, this allows us to ' +
+            'remove some outliers.'
+        };
+        PREPROCESSING_REASONS['bandpass-median'] = PREPROCESSING_REASONS['bandpass'] + ' ' + PREPROCESSING_REASONS['median'];
+        PREPROCESSING_REASONS['z-bandpass'] = PREPROCESSING_REASONS['z'] + ' ' + PREPROCESSING_REASONS['bandpass'];
+        PREPROCESSING_REASONS['bandpass-z'] = PREPROCESSING_REASONS['bandpass'] + ' ' + PREPROCESSING_REASONS['z'];
+        POSTPROCESSING_REASONS = {
             'pearson': 'Pearson correlation measures the linear correlation between 2 sets of data and returns a ' +
             'value in a range between -1 and +1. A Pearson correlation of -1 means the 2 sets have complete negative ' +
             'correlation, 0 means no correlation at all and +1 means complete positive correlation. ' +
@@ -372,7 +395,7 @@
             'Spearman correlation because we thought it would complement Pearson correlation well, since Spearman ' +
             'isn\'t based on the linearity of the data. SciPy\'s <code>stats.spearmanr</code> was used. ' +
             'This measure shows us a ' +
-            'monotonic relationship between two nodes and show what Pearson correlation might’ve had trouble showing.',
+            'monotonic relationship between two nodes and show what Pearson correlation might\'ve had trouble showing.',
             'ssim': 'Structural similarity, or SSIM, is often used to measure the similarity between 2 images and ' +
             'returns a value in a range between -1 and +1. A SSIM value of -1 means the 2 sets of data have no ' +
             'resemblance and +1 means the data sets are identical to each other. ' +
@@ -384,7 +407,7 @@
             '1, otherwise it will get get closer to 0. This is one of the most popular similarity measures and it ' +
             'seemed applicable. Scikit-learn\'s <code>metrics.pairwise.cosine_similarity</code> was used.'
         };
-        var PROCESSED_JSON = {
+        PROCESSED_JSON = {
             "z": {
                 "pearson": [JSON_MEDIA_ROOT + PEARSON_DIR + Z_DIR + 'z-score-matrix-30s.json',
                     JSON_MEDIA_ROOT + PEARSON_DIR + Z_DIR + 'fitted-indices-z-score-pearson-30s.json'],
@@ -451,6 +474,7 @@
             $('#visualize').addClass('disabled');
             initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
             postprocessingReason.html(POSTPROCESSING_REASONS[postprocessorSelect.val()]);
+            preprocessingReason.html(PREPROCESSING_REASONS[preprocessorSelect.val()]);
             console.log(initSelected);
             generateViz(initSelected[0], initSelected[1]);
             e.preventDefault();
@@ -458,7 +482,7 @@
         clusterButton.hide();
         boundInput = $('#boundInput');
         chordContainer = $('#chordContainer');
-        d3.json('/media/json/phases_of_sleep.json', function (data) {
+        d3.json('media/json/phases_of_sleep.json', function (data) {
             console.log(data);
             TIMESTEPS = data['timesteps'];
             MARKS = data['marks'];
@@ -920,7 +944,9 @@
             ]
         });
         tour.addStep('step-2', {
-            text: 'Then select a post-processor and click <strong>Visualize</strong>. <br>The visualization will show channel vs channel' +
+            text: 'Then select a post-processor and click <strong>Visualize</strong>. ' +
+            '<br>This process takes a bit of time and can freeze the browser.' +
+            '<br>The visualization will show channel vs channel' +
             '<br>on the horizontal axis and timesteps (30s intervals)<br> on the vertical. Each row/column represents one unit;' +
             '<br>a row is a 30s timestep and<br> a column is a channel vs channel (e.g. T7 vs P10).',
             attachTo: '.step-2 bottom',
@@ -932,8 +958,20 @@
             ]
         });
         tour.addStep('step-3', {
-            text: 'Lastly, you can move the correlation range slider to select edges with the values in the specified range.',
+            text: 'Sort by cluster will perform bicluster on the matrix visualization.',
             attachTo: '.step-3 top',
+            buttons: [
+                {
+                    text: 'Next',
+                    action: tour.next
+                }
+            ]
+        });
+
+        tour.addStep('step-4', {
+            text: 'You can move the correlation range slider to select edges with the values in the specified range. ' +
+            '<br>Clicking on a row on the matrix visualization will update the chord for that time interval.',
+            attachTo: '.step-4 bottom',
             buttons: [
                 {
                     text: 'Close',
