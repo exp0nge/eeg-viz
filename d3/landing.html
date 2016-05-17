@@ -108,6 +108,7 @@
     </style>
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css">
+    <link rel="stylesheet" href="shepherd-theme-arrows.css">
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>EEG Sleep Data Visualization</title>
@@ -127,14 +128,26 @@
     <div id="tooltip" class="hidden card-panel">
         <p><span id="value"></span></p>
     </div>
-    <h2 class="card-panel center">Networks in Electroencephalogram (EEG) Sleep Data</h2>
+    <h2 class="card-panel center">Networks in Electroencephalogram Sleep Data</h2>
     <div class="row container">
         <div class="col s12">
             <div class="card">
                 <div class="card-content">
-                    <h3>What</h3>
-                    <p>I am a very simple card. I am good at containing small bits of information.
-                        I am convenient because I require little markup to use effectively.</p>
+                    <h3>What is this?</h3>
+                    <p>Electroencephalography (EEG) is a method to record electrical activity of the brain. Electrodes
+                        are placed on different parts of the scalp. Voltages are then measured and all 64 channels (nodes)
+                        <a href="http://www.bem.fi/book/13/13.htm">[1]</a>
+                        provide a point of data every millisecond. This means that there will be 64,000 points per
+                        second. This
+                        is challenging to visualize because of the high number of dimensions. This visualization shows
+                        correlations between channels at the full interval on 30s timesteps. Since the last three
+                        channels ROC, LOC,
+                        and AUX1 do not contribute to correlation, they have been dropped. ROC/LOC can be used to remove
+                        some artifacts, like eye blinks. Unfortunately, this visualization does not use ICA <a
+                                href="http://sccn.ucsd.edu/~jung/artifact.html">
+                            [2]</a> to remove artifacts.</p>
+                    <br>
+                    <a class="btn blue waves-effect waves-light start-tour">Start Tour</a>
                 </div>
             </div>
         </div>
@@ -145,7 +158,7 @@
                     class="chip">30s Intervals</span>
                 Matrix Visualization</h3>
             <div class="row form-inline">
-                <div class="input-field col s5">
+                <div class="input-field col s5  step-1">
                     <select id="preprocessorSelect">
                         <option value="z">Z Score</option>
                         <option value="bandpass">Bandpass</option>
@@ -156,7 +169,7 @@
                     </select>
                     <label>Preprocessor</label>
                 </div>
-                <div class="input-field col s5">
+                <div class="input-field col s5  step-2">
                     <select id="postprocessorSelect">
                         <option value="pearson">Pearson</option>
                         <option value="cosine">Cosine</option>
@@ -179,7 +192,7 @@
     <div class="card-panel white">
         <div class="container" id="chordContainer">
             <h3>Correlations Between Channels</h3>
-            <h5>Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
+            <h5 class="step-3">Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
             <input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
             <div id="chord"></div>
             <hr>
@@ -239,6 +252,17 @@
             <div class="card">
                 <div class="card-content">
                     <h3>Significance</h3>
+                    <p>I am a very simple card. I am good at containing small bits of information.
+                        I am convenient because I require little markup to use effectively.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row container">
+        <div class="col s12">
+            <div class="card">
+                <div class="card-content">
+                    <h3>Contributions</h3>
                     <p>I am a very simple card. I am good at containing small bits of information.
                         I am convenient because I require little markup to use effectively.</p>
                 </div>
@@ -793,6 +817,54 @@
 
     });
 
+</script>
+<script type="application/javascript" src="tether.js"></script>
+<script type="application/javascript" src="shepherd.min.js"></script>
+<script type="application/javascript">
+    $(document).ready(function () {
+        var tour = new Shepherd.Tour({
+            defaults: {
+                classes: 'shepherd-theme-arrows shepherd-element shepherd-open',
+                showCancelLink: true,
+                scrollTo: true
+            }
+        });
+        tour.addStep('step-1', {
+            text: 'First start off by selecting a preprocessor.',
+            attachTo: '.step-1 bottom',
+            buttons: [
+                {
+                    text: 'Next',
+                    action: tour.next
+                }
+            ]
+        });
+        tour.addStep('step-2', {
+            text: 'Then select a post-processor and click <strong>Visualize</strong>. <br>The visualization will show channel vs channel' +
+            '<br>on the horizontal axis and timesteps (30s intervals)<br> on the vertical. Each row/column represents one unit;' +
+            '<br>a row is a 30s timestep and<br> a column is a channel vs channel (e.g. T7 vs P10).',
+            attachTo: '.step-2 bottom',
+            buttons: [
+                {
+                    text: 'Next',
+                    action: tour.next
+                }
+            ]
+        });
+        tour.addStep('step-3', {
+            text: 'Lastly, you can move the correlation range slider to select edges with the values in the specified range.',
+            attachTo: '.step-3 top',
+            buttons: [
+                {
+                    text: 'Close',
+                    action: tour.hide
+                }
+            ]
+        });
+        $('.start-tour').on('click', function (e) {
+            tour.start();
+        });
+    });
 </script>
 </body>
 </html>
