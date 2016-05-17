@@ -45,8 +45,9 @@ w3, h3 = signal.freqs(b3, a3)
 new_matrix = []
 
 for index, row in (enumerate(matrix)):
-	if(index!=63):
-		new_matrix.append(row[3000000:-1])
+	if(index!=63 and index!=62 and index!=61):
+		print index
+		new_matrix.append(row[0:600000])
 # print len(new_matrix[0])
 eeg = signal.detrend(np.array(new_matrix),type='constant')
 
@@ -76,21 +77,21 @@ mat3 = []
 for row in range(len(new_matrix)):
 	mat3.append(signal.lfilter(b3, a3, eeg[row]))
 
-#stemp = pd.DataFrame(mmat3).clip(-600,600)
-stemp = pd.DataFrame(mat3).clip(-600,600)
+stemp = pd.DataFrame(mat3).clip(-300,300)
+#stemp = pd.DataFrame(mat3)
 
-s3 = pd.DataFrame(zscore(stemp)).transpose()
+s3 = pd.DataFrame((stemp))
 
 band = np.array(s3)
 
-band.dump('band1MedCutZscore.dumps')
+band.dump('bandClipped1.dumps')
 
 # In[ ]:
 #s.plot(legend=False)
 #s1.plot(legend=False)
 #s2.plot(legend=False)
 print "\n Huh?"
-s3.plot(legend=False)
+#s3.plot(legend=False)
 print "Did that work?"
 # cumsum() adds the value of each channel and displays the sum
 # s = s.cumsum()
@@ -114,4 +115,4 @@ print "Did that work?"
 #plt.axis('tight');
 
 
-plt.show()
+#plt.show()

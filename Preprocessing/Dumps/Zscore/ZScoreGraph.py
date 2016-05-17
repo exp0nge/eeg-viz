@@ -6,12 +6,12 @@ from scipy import signal
 from scipy.stats import pearsonr,zscore
 
 
-band1 = np.load('ZScore1.dumps')
-band2 = np.load('ZScore2.dumps')
-band3 = np.load('ZScore3.dumps')
-band4 = np.load('ZScore4.dumps')
-band5 = np.load('ZScore5.dumps')
-band6 = np.load('ZScore6.dumps')
+band1 = np.load('ZScoreBand1.dumps')
+band2 = np.load('ZScoreBand2.dumps')
+band3 = np.load('ZScoreBand3.dumps')
+band4 = np.load('ZScoreBand4.dumps')
+band5 = np.load('ZScoreBand5.dumps')
+band6 = np.load('ZScoreBand6.dumps')
 
 #band1M = np.load('band1MedCut.dumps').transpose()
 #band2M = np.load('band2MedCut.dumps').transpose()
@@ -43,10 +43,39 @@ x = np.arange(0,3383.766,.001)
 
 band = np.zeros(shape=(61,3383766))
 
+low = 0.3
+high = 30
+fs = 1000
+
+lowcut = low/(0.5*fs)
+highcut = high/(0.5*fs)
+
+#bandpass
+b3, a3 = signal.butter(2, [lowcut,highcut], 'band')
+w3, h3 = signal.freqs(b3, a3)
+
+for row in range(len(band1)):
+    band1[row] = (signal.lfilter(b3, a3, band1[row]))
+    band2[row] = (signal.lfilter(b3, a3, band2[row]))
+    band3[row] = (signal.lfilter(b3, a3, band3[row]))
+    band4[row] = (signal.lfilter(b3, a3, band4[row]))
+    band5[row] = (signal.lfilter(b3, a3, band5[row]))
+    band6[row] = (signal.lfilter(b3, a3, band6[row]))
+
+
 for index, column in enumerate(band3):
     band[index] = np.concatenate((band1[index],band2[index],band3[index],band4[index],band5[index],band6[index]))
 
-#band = zscore(band)
+band = signal.medfilt(band)
+#eeg = signal.detrend(np.array(band), type='constant')
+#band = zscore(eeg)
+
+#band1.dump("ZScoreBand1.dumps")
+#band2.dump("ZScoreBand2.dumps")
+#band3.dump("ZScoreBand3.dumps")
+#band4.dump("ZScoreBand4.dumps")
+#band5.dump("ZScoreBand5.dumps")
+#band6.dump("ZScoreBand6.dumps")
 
 #matrix=[]
 #for index, row in (enumerate(band)):
@@ -55,6 +84,9 @@ for index, column in enumerate(band3):
 #		matrix.append(row[3000000:-1])
 
 #matrix = np.array(matrix)
+print "........"
+band.dump("ZScoreBandMed.dumps")
+
 
 for index, column in enumerate(band):
     #band = band +
@@ -79,6 +111,7 @@ for index, column in enumerate(band):
         ax.set_xlabel('Sec')
         ax.plot(x, column)
     i+=1
+
 
 #band.dump('ZScore6.dumps')
 plt.show()
