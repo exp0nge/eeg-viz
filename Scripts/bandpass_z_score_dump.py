@@ -1,14 +1,7 @@
-import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.stats import pearsonr
-from scipy import stats
-from scipy.io import loadmat
-from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
-
 import cPickle
 
+import numpy as np
+from scipy import stats
 
 band1 = np.load('band1.dump')
 band2 = np.load('band2.dump')

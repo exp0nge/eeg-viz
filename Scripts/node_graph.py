@@ -1,10 +1,7 @@
-import pandas as pd
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from scipy import signal
-from scipy.stats import pearsonr,zscore
-
 
 band1 = np.load('rawData1.dumps').transpose()
 band2 = np.load('rawData2.dumps').transpose()

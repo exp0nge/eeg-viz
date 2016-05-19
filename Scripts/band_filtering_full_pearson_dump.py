@@ -1,8 +1,4 @@
-import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
 from scipy.stats import pearsonr
 # from scipy.io import loadmat
 # from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering

@@ -1,8 +1,8 @@
-import matplotlib.pyplot as plt
+import cPickle
+
 import numpy as np
 from scipy import stats
 from scipy.io import loadmat
-import cPickle
 
 m = loadmat('s5d2nap_justdata.mat')
 matrix = np.array(m['s5d2nap'])

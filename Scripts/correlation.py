@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr
 from scipy import signal
+from scipy.stats import pearsonr
 
 # coding: utf-8
 

@@ -1,8 +1,4 @@
-import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy import stats
 from scipy.stats import pearsonr
 # from scipy.io import loadmat
 # from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
@@ -18,25 +14,24 @@ band5 = np.load('band5.dump')
 band = np.transpose(np.concatenate((band1, band2, band3, band4, band5)))
 print band.shape
 pearson_5s = []
-length = 60000
 
 
 def calculate_pearson(start):
-    for interval in range(len(band[start])/length + 1):
-        j = length*interval
+    for interval in range(len(band[start])/5000 + 1):
+        j = 5000*interval
         # print j, interval
-        if interval == len(band[start])/length + 1:
+        if interval == len(band[start])/5000 + 1:
             for index in range(63):
                 if start < index:
                     pearson_5s.append(pearsonr(band[start][j:], band[index][j:])[0])
         else:
             for index in range(63):
                 if start < index:
-                    pearson_5s.append(pearsonr(band[start][j:j+length], band[index][j:j+length])[0])
+                    pearson_5s.append(pearsonr(band[start][j:j+5000], band[index][j:j+5000])[0])
 
 
 def dump_band_pearson():
-    with open('band_1min_pearson.dump', 'wb') as f:
+    with open('band_5s_pearson.dump', 'wb') as f:
         cPickle.dump(pearson_5s, f)
 
 

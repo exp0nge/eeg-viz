@@ -1,8 +1,6 @@
-import pandas as pd
-import matplotlib as mpl
-import simplejson
 import matplotlib.pyplot as plt
 import numpy as np
+import simplejson
 from scipy.stats import pearsonr,zscore
 from sklearn.cluster import SpectralBiclustering
 

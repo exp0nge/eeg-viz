@@ -1,7 +1,7 @@
+import cPickle
 
 import numpy as np
 from scipy.stats import pearsonr
-import cPickle
 
 z_scores = np.load('raw_z_npdump.dump')
 

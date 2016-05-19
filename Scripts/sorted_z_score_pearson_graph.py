@@ -1,9 +1,5 @@
 import matplotlib.pyplot as plt
-import pandas as pd
-from scipy.io import loadmat
 import numpy as np
-from scipy.stats import pearsonr
-import cPickle
 
 # load np array
 pearson_z_score = np.load('z_score_pearson_dump.dump')

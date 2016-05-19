@@ -1,11 +1,10 @@
 # coding: utf-8
-import pandas as pd
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.stats import pearsonr
+import pandas as pd
 from scipy import stats
 from scipy.io import loadmat
+from scipy.stats import pearsonr
 from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
 
 <<<<<<< HEAD
@@ -15,7 +14,6 @@ from sklearn.cluster.bicluster import SpectralBiclustering, SpectralCoclustering
 matrix = None
 print 'Data loaded'
 =======
-import cPickle
 
 m = loadmat('s5d2nap_justdata.mat')
 

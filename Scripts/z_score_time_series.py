@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-import pandas as pd
-from scipy.io import loadmat
 import numpy as np
 
 z_scores = np.load('raw_z_npdump.dump')
