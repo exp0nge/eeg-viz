@@ -204,13 +204,13 @@
                 by cluster</a>
         </div>
         <br>
-        <div id="matrix" style="width: 100%; height: 600px; overflow: auto;"></div>
+        <div id="matrix" style="width: 100%; height: 620px; overflow: auto;"></div>
     </div>
 
     <div class="card-panel white">
         <div class="container" id="chordContainer">
             <h3>Correlations Between Channels</h3>
-            <h5 class="step-4">Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
+            <strong class="step-4">Current Time Interval (in seconds) <span class="btn disabled" id="timeStep">0:00 - 0:30</span></strong>
             <div class="card grey lighten-3">
                 <p class="card-content">
                     The chord diagram shows the correlations between channels at the selected time interval. By moving
@@ -360,6 +360,13 @@
 <script type="application/javascript" src="d3/jquery.range-min.js"></script>
 <script type="application/javascript">
     $(document).ready(function () {
+        var i;
+        var end_sec_time;
+        var start;
+        var end_min_time;
+        var start_sec_time;
+        var end;
+        var start_min_time;
         var PROCESSED_JSON;
         var POSTPROCESSING_REASONS;
         var initSelected;
@@ -377,6 +384,7 @@
         var preprocessingReason = $('#preprocessing-reason');
         var postprocessingReason = $('#postprocessing-reason');
         var biclustered;
+        var CONVERTED_TIMESTEPS = {};
         var JSON_MEDIA_ROOT = 'media/json/';
         var BANDPASS_DIR = 'band_clipped/';
         var BANDPASS_MED_DIR = 'band_median/';
@@ -491,426 +499,441 @@
                     JSON_MEDIA_ROOT + SSIM_DIR + BANDPASS_Z + 'fitted-indices-band-z-score-pearson-30s.json']
             }
         };
-        visualizeButton.on('click', function (e) {
-            biclustered = false;
-            $('#visualize').addClass('disabled');
-            initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
-            postprocessingReason.html(POSTPROCESSING_REASONS[postprocessorSelect.val()]);
-            preprocessingReason.html(PREPROCESSING_REASONS[preprocessorSelect.val()]);
-            console.log(initSelected);
-            generateViz(initSelected[0], initSelected[1]);
-            e.preventDefault();
-        });
-        clusterButton.hide();
-        boundInput = $('#boundInput');
-        chordContainer = $('#chordContainer');
-        d3.json('media/json/phases_of_sleep.json', function (data) {
-            console.log(data);
-            TIMESTEPS = data['timesteps'];
-            MARKS = data['marks'];
-            console.log('marks loaded');
-        });
-        $('.parallax').parallax();
-        $('select').material_select();
-        generateViz = function (processedDataPath, fittedDataPath) {
-            d3.json(processedDataPath, function (data) {
-                clusterButton.show();
-                clusterButton.removeClass('disabled');
-                $('#chord').empty();
-                $('#matrix').empty();
-                currentTimestep = $('#timeStep');
-                ROWS = data['data'].length;
-                COLUMNS = data['data'][0].length;
+        // load converted timesteps
 
-                matrix = [];
-                for (i = 0; i < ROWS; i++) {
-                    for (var j = 0; j < COLUMNS; j++) {
-//                    if (data['data'][i][j] < 0) {
-//                        matrix.push({
-//                            row: i,
-//                            col: j,
-//                            value: Math.abs(data['data'][i][j])
-//                        });
-//                    } else {
-                        matrix.push({
-                            row: i,
-                            col: j,
-                            value: data['data'][i][j]
-                        });
-
-
-                    }
+        for (i = 0; i < 112; i++) {
+                start = i * 30;
+                end = (i + 1) * 30;
+                start_min_time = Math.floor(start / 60);
+                start_sec_time = start % 60;
+                end_min_time = Math.floor(end / 60);
+                end_sec_time = end % 60;
+                if (start_sec_time < 10) {
+                    start_sec_time = "0" + start_sec_time.toString();
                 }
-                console.log('MATRIX LOADED');
+                if (end_sec_time < 10) {
+                    end_sec_time = "0" + end_sec_time.toString();
+                }
 
-                MIN = d3.min(matrix, function (d, i) {
-                    return d.value;
-                }),
-                        margin = {top: 30, right: 0, bottom: 0, left: 30},
-                        cellSize = 5,
-                        legendElementWidth = cellSize * 2.5,
-                        col_number = d3.max(matrix, function (d, i) {
-                            return d.col;
-                        }),
-                        row_number = d3.max(matrix, function (d, i) {
-                            return d.row;
-                        }),
-                        WIDTH = cellSize * col_number,
-                        HEIGHT = cellSize * row_number,
-                        hcrow = d3.range(1, row_number + 1, 1),
-                        hccol = d3.range(1, col_number + 1, 1),
-                        colors = ['#005824', '#1A693B', '#347B53', '#4F8D6B', '#699F83', '#83B09B', '#9EC2B3', '#B8D4CB', '#D2E6E3', '#EDF8FB', '#FFFFFF', '#F1EEF6', '#E6D3E1', '#DBB9CD', '#D19EB9', '#C684A4', '#BB6990', '#B14F7C', '#A63467', '#9B1A53', '#91003F'],
-                        colorScale = d3.scale.quantile()
-                                .domain([-1, 0, 1])
-                                .range(colors);
+                CONVERTED_TIMESTEPS[i] = start_min_time.toString() + ":" + start_sec_time.toString() + " - " +
+                        end_min_time.toString() + ":" + end_sec_time.toString();
 
+            }
+            CONVERTED_TIMESTEPS[112] = '56:00 - 56:24';
 
-                svg = d3.select("#matrix").append("svg")
-                        .attr("width", WIDTH)
-                        .attr("height", HEIGHT)
-                        .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-                svg.append('text')
-                        .attr("x", margin.left)
-                        .attr("class", "mono")
-                        .attr("y", -10)
-                        .text("Channel vs Channel");
-                svg.append('text')
-                        .attr("transform", "rotate(-90)")
-                        .attr("class", "mono")
-                        .attr("x", -130)
-                        .attr("y", -10)
-                        .text("Time Interval");
+            visualizeButton.on('click', function (e) {
+                biclustered = false;
+                $('#visualize').addClass('disabled');
+                initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
+                postprocessingReason.html(POSTPROCESSING_REASONS[postprocessorSelect.val()]);
+                preprocessingReason.html(PREPROCESSING_REASONS[preprocessorSelect.val()]);
+                console.log(initSelected);
+                generateViz(initSelected[0], initSelected[1]);
+                e.preventDefault();
+            });
+            clusterButton.hide();
+            boundInput = $('#boundInput');
+            chordContainer = $('#chordContainer');
+            d3.json('media/json/phases_of_sleep.json', function (data) {
+                console.log(data);
+                TIMESTEPS = data['timesteps'];
+                MARKS = data['marks'];
+                console.log('marks loaded');
+            });
+            $('.parallax').parallax();
+            $('select').material_select();
+            generateViz = function (processedDataPath, fittedDataPath) {
+                d3.json(processedDataPath, function (data) {
+                    clusterButton.show();
+                    clusterButton.removeClass('disabled');
+                    $('#chord').empty();
+                    $('#matrix').empty();
+                    currentTimestep = $('#timeStep');
+                    ROWS = data['data'].length;
+                    COLUMNS = data['data'][0].length;
 
-                svg.selectAll(".legend")
-                        .append("g")
-                        .attr("class", "legend")
-                        .data(colorScale.range())
-                        .enter()
-                        .append("rect")
-                        .attr("x", function (d, i) {
-                            return margin.left + 300 + legendElementWidth + (i * 20);
-                        })
-                        .attr("y", -margin.top)
-                        .attr("width", 20)
-                        .attr("height", 20)
-                        .style("fill", function (d, i) {
-                            return colors[i];
-                        });
-                svg.append('text')
-                        .attr("class", "mono")
-                        .attr("x", margin.left + 300 + legendElementWidth - 20)
-                        .attr("y", -margin.top / 2)
-                        .text("-1");
-                svg.append('text')
-                        .attr("class", "mono")
-                        .attr("x", margin.left + 305 + legendElementWidth + (colorScale.range().length * 20))
-                        .attr("y", -margin.top / 2)
-                        .text("+1");
-
-                SELECTED_ROW = 0;
-
-                heat = svg.append("g").attr("class", "g3")
-                        .selectAll(".cellg")
-                        .data(matrix, function (d, i) {
-                            return d.row + ":" + d.col;
-                        })
-                        .enter()
-                        .append("rect")
-                        .attr("x", function (d) {
-                            return hccol.indexOf(d.col) * cellSize;
-                        })
-                        .attr("y", function (d) {
-                            return hcrow.indexOf(d.row) * cellSize;
-                        })
-                        .attr("class", 'cell')
-                        .attr("width", cellSize)
-                        .attr("height", cellSize)
-                        .style("fill", function (d, idx) {
-                            return colorScale(d.value);
-                        })
-                        .on("mouseover", function (d, idx) {
-                            //highlight text
-                            d3.select(this).classed("cell-hover", true);
-                            d3.selectAll(".rowLabel").classed("text-highlight", function (r, ri) {
-                                return ri == (d.row - 1);
-                            });
-                            d3.selectAll(".colLabel").classed("text-highlight", function (c, ci) {
-                                return ci == (d.col - 1);
+                    matrix = [];
+                    for (i = 0; i < ROWS; i++) {
+                        for (var j = 0; j < COLUMNS; j++) {
+                            matrix.push({
+                                row: i,
+                                col: j,
+                                value: data['data'][i][j]
                             });
 
-                            //Update the tooltip position and value
-                            d3.select("#tooltip")
-                                    .style("left", (d3.event.pageX + 10) + "px")
-                                    .style("top", (d3.event.pageY - 10) + "px")
-                                    .select("#value")
-                                    .text("Correlation:" + matrix[idx].value + "\nTimestep:" + matrix[idx].row + ", col:" + matrix[idx].col);
-                            //Show the tooltip
-                            d3.select("#tooltip").classed("hidden", false);
-                        })
-                        .on("mouseout", function () {
-                            d3.select(this).classed("cell-hover", false);
-                            d3.selectAll(".rowLabel").classed("text-highlight", false);
-                            d3.selectAll(".colLabel").classed("text-highlight", false);
-                            d3.select("#tooltip").classed("hidden", true);
-                        })
-                        .on('click', function (d, idx) {
-                            SELECTED_ROW = matrix[idx].row;
-                            var lowerUpper = boundInput.attr('value').split(',');
-                            generateChord(parseFloat(lowerUpper[0]), parseFloat(lowerUpper[1]), d.row);
-                            markers = TIMESTEPS[SELECTED_ROW * 30];
-                            markToID = {
-                                'spindle': '#spindle',
-                                'Markon: w': '#m-on-w',
-                                'Markoff: w': '#m-off-w',
-                                'Markoff: 1': '#m-on-1',
-                                'Markon: 1': '#m-off-1',
-                                'Markoff: 2': '#m-on-2',
-                                'Markon: 2': '#m-off-2',
-                                'Markon: 3': '#m-on-3',
-                                'Markoff: 3': '#m-off-3'
-                            };
-                            currentTimestep.html(SELECTED_ROW);
-                            $('html,body').animate({
-                                scrollTop: chordContainer.offset().top
-                            });
-                            console.log('----------------------');
-                            $('.badge').html(0);
-                            $('.badge').removeClass('teal');
-                            for (var i = 0; i < markers.length; i++) {
-                                console.log('PHASE: ', MARKS[markers[i]]);
-                                markId = $(markToID[MARKS[markers[i]]]);
-                                markId.html(parseInt(markId.html()) + 1);
-                                markId.addClass('teal');
-                            }
-                        });
-                bicluster = function (originalData) {
-                    biclustered = true;
-                    clusterButton.addClass('disabled');
-                    d3.json(fittedDataPath, function (indices) {
-                        console.log(indices['data'].length, originalData.length);
-                        console.log(d3.selectAll('.cell'));
-                        d3.selectAll('.cell')
-                                .style("fill", function (d, idx) {
-                                    var rowCol = indices['data'][idx];
-                                    matrix[idx] = {
-                                        'row': rowCol[0],
-                                        'col': rowCol[1],
-                                        'value': originalData[rowCol[0]][rowCol[1]]
-                                    };
-                                    return colorScale(originalData[rowCol[0]][rowCol[1]]);
-                                });
-                        console.log('done fitting');
-                    });
-                };
-                clusterButton.on('click', function (e) {
-                    if (!biclustered) {
-                        bicluster(data['data']);
-                    }
-                    e.preventDefault();
-                });
 
-                MAX_ROW_TIME = data['data'].length;
-                d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
-                console.log('data retrieved');
-                // TODO: Find min/max of data and alter bound
-                // TODO: get actual labels
-                generateMatrix = function (ROW_TIME) {
-                    var START_COLUMN = 0;
-                    var END_COLUMN = 61;
-                    var ROW_TIME = ROW_TIME;
-                    var matrix = new Array(61);
-                    // insert into node 0 first
-                    var rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
-                    matrix[0] = rowData;
-                    START_COLUMN = END_COLUMN;
-                    END_COLUMN += 60;
-                    // fill in rest of array, not forgetting to store the previously calculated value (eg. 1 vs 0 is not in the interval)
-                    for (var i = 1; i < 61; i++) {
-                        rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
-                        //rowData.splice(i - 1, 0, data['data'][ROW_TIME][i]); // insert i vs i - 1 since it's not in JSON
-                        matrix[i] = rowData;
-                        START_COLUMN = END_COLUMN;
-                        END_COLUMN += (60 - i);
-                    }
-                    // fill in missing values in matrix
-                    for (var i = 1; i < 61; i++) {
-                        for (j = 0; j < i; j++) {
-                            matrix[i].splice(j, 0, matrix[j][i]);
                         }
                     }
-                    return matrix;
-                };
+                    console.log('MATRIX LOADED');
 
-                generateChord = function (lowerBound, upperBound, time) {
-                    d3.selectAll('.chordDiagram').remove();
-                    var alteredMatrix = generateMatrix(time);
-                    // threshold test
-                    for (var i = 0; i < 61; i++) {
-                        for (var j = 0; j < 61; j++) {
-                            //check if it's negative
-                            if (alteredMatrix[i][j] >= lowerBound && alteredMatrix[i][j] <= upperBound) {
-                                if (alteredMatrix[i][j] < 0) {
-                                    // chord messes up on negatives
-                                    alteredMatrix[i][j] = Math.abs(alteredMatrix[i][j]);
-                                } else {
-                                    alteredMatrix[i][j] = alteredMatrix[i][j];
-                                }
-                            } else {
-                                alteredMatrix[i][j] = 0;
-                            }
-                        }
-                    }
-
-
-                    chord = d3.layout.chord()
-                            .padding(0.05)
-                            .sortSubgroups(d3.descending)
-                            .matrix(alteredMatrix);
+                    MIN = d3.min(matrix, function (d, i) {
+                        return d.value;
+                    }),
+                            margin = {top: 30, right: 0, bottom: 0, left: 30},
+                            cellSize = 5,
+                            legendElementWidth = cellSize * 2.5,
+                            col_number = d3.max(matrix, function (d, i) {
+                                return d.col;
+                            }),
+                            row_number = d3.max(matrix, function (d, i) {
+                                return d.row;
+                            }),
+                            WIDTH = cellSize * col_number,
+                            HEIGHT = cellSize * row_number,
+                            hcrow = d3.range(1, row_number + 1, 1),
+                            hccol = d3.range(1, col_number + 1, 1),
+                            colors = ['#005824', '#1A693B', '#347B53', '#4F8D6B', '#699F83', '#83B09B', '#9EC2B3', '#B8D4CB', '#D2E6E3', '#EDF8FB', '#FFFFFF', '#F1EEF6', '#E6D3E1', '#DBB9CD', '#D19EB9', '#C684A4', '#BB6990', '#B14F7C', '#A63467', '#9B1A53', '#91003F'],
+                            colorScale = d3.scale.quantile()
+                                    .domain([-1, 0, 1])
+                                    .range(colors);
 
 
-                    //DIMENSIONS
-                    width = 1000,
-                            height = 600,
-                            innerRadius = Math.min(width, height) * 0.41,
-                            outerRadius = innerRadius * 1.05,
-                            names = [];
-
-                    for (var i = 0; i < 64; i++) {
-                        names[i] = NODE_LABELS[i];
-                    }
-                    //COLORS
-                    fill = d3.scale.ordinal()
-                            .domain(d3.range(5)) // number of colors
-                            .range(["#000000", "#FFDD89", "#957244", "#F26223", "#E0E000"]);
-
-                    //Setting the Dimensions
-                    svg = d3.select("#chord").append("svg")
-                            .attr("width", width)
-                            .attr("height", height)
-                            .attr("class", "chordDiagram")
+                    svg = d3.select("#matrix").append("svg")
+                            .attr("width", WIDTH)
+                            .attr("height", HEIGHT + 40) // +40 for the legend
                             .append("g")
-                            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+                            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    svg.append('text')
+                            .attr("x", margin.left)
+                            .attr("class", "mono")
+                            .attr("y", -10)
+                            .text("Channel vs Channel");
+                    svg.append('text')
+                            .attr("transform", "rotate(-90)")
+                            .attr("class", "mono")
+                            .attr("x", -130)
+                            .attr("y", -10)
+                            .text("Time Interval");
 
-
-                    //Setting Colors and Mouseover/Mouseout effects
-                    svg.append("g").selectAll("path")
-                            .data(chord.groups)
-                            .enter().append("path")
-                            .style("fill", function (d) {
-                                return fill(d.index);
-                            })
-                            .style("stroke", function (d) {
-                                return fill(d.index);
-                            })
-                            .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
-                            .on("mouseover", fade(.2))
-                            .on("mouseout", fade(1))
-                            .on("click", function (d) {
-                                console.log(d['index']);
-
-                            });
-
-                    //Ticks and it's labels
-                    ticks = svg.append("g").selectAll("g")
-                            .data(chord.groups)
-                            .enter().append("g").selectAll("g")
-                            .data(groupTicks)
-                            .enter().append("g")
-                            .attr("transform", function (d) {
-                                return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
-                                        + "translate(" + outerRadius + ",0)";
-                            });
-
-                    //tick markers lengths (don't mess with y, it change's the angle of the lines)
-                    ticks.append("line")
-                            .attr("x1", 1)
-                            .attr("y1", 0)
-                            .attr("x2", 1)
-                            .attr("y2", 0)
-
-                            .style("stroke", "#000");
-
-                    //tick labels
-                    ticks.append("text")
-                            .attr("x", 8)
-                            .attr("dy", ".35em")
-                            .attr("text-anchor", function (d) {
-                                return d.angle > Math.PI ? "end" : null;
-                            })
-                            .attr("transform", function (d) {
-                                return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
-                            })
-                            .style('font', '10px sans-serif');
-                    //.text(function(d) { return d.label; });
-
-                    chordgroups = chord.groups()
-                            .map(function (d) {
-                                d.angle = (d.startAngle + d.endAngle) / 2;
-                                return d;
-                            });
-
-                    svg.selectAll(".text")
-                            .data(chordgroups)
+                    svg.selectAll(".legend")
+                            .append("g")
+                            .attr("class", "legend")
+                            .data(colorScale.range())
                             .enter()
-                            .append("text")
-                            .attr("class", "text")
-                            .attr("text-anchor", function (d) {
-                                return d.angle > Math.PI ? "end" : null;
+                            .append("rect")
+                            .attr("x", function (d, i) {
+                                return margin.left + 300 + legendElementWidth + (i * 20);
                             })
-                            .attr("transform", function (d) {
+                            .attr("y", -margin.top)
+                            .attr("width", 20)
+                            .attr("height", 20)
+                            .style("fill", function (d, i) {
+                                return colors[i];
+                            });
+                    svg.append('text')
+                            .attr("class", "mono")
+                            .attr("x", margin.left + 300 + legendElementWidth - 20)
+                            .attr("y", -margin.top / 2)
+                            .text("-1");
+                    svg.append('text')
+                            .attr("class", "mono")
+                            .attr("x", margin.left + 305 + legendElementWidth + (colorScale.range().length * 20))
+                            .attr("y", -margin.top / 2)
+                            .text("+1");
 
-                                //rotate each label around the circle
-                                return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" +
-                                        "translate(" + (outerRadius + 10) + ")" +
-                                        (d.angle > Math.PI ? "rotate(180)" : "");
+                    SELECTED_ROW = 0;
 
+                    heat = svg.append("g").attr("class", "g3")
+                            .selectAll(".cellg")
+                            .data(matrix, function (d, i) {
+                                return d.row + ":" + d.col;
                             })
-                            .text(function (d) {
-                                //set the text content
-                                return names[d.index];
+                            .enter()
+                            .append("rect")
+                            .attr("x", function (d) {
+                                return hccol.indexOf(d.col) * cellSize;
                             })
-                            .style('font', '10px sans-serif');
-
-                    //
-                    svg.append("g")
-                            .attr("class", "chord")
-                            .selectAll("path")
-                            .data(chord.chords)
-                            .enter().append("path")
-                            .attr("d", d3.svg.chord().radius(innerRadius))
-                            .style("fill", function (d) {
-                                return fill(d.target.index);
+                            .attr("y", function (d) {
+                                return hcrow.indexOf(d.row) * cellSize;
                             })
-                            .style("opacity", 1);
+                            .attr("class", 'cell')
+                            .attr("width", cellSize)
+                            .attr("height", cellSize)
+                            .style("fill", function (d, idx) {
+                                return colorScale(d.value);
+                            })
+                            .on("mouseover", function (d, idx) {
+                                //highlight text
+                                d3.select(this).classed("cell-hover", true);
+                                d3.selectAll(".rowLabel").classed("text-highlight", function (r, ri) {
+                                    return ri == (d.row - 1);
+                                });
+                                d3.selectAll(".colLabel").classed("text-highlight", function (c, ci) {
+                                    return ci == (d.col - 1);
+                                });
 
-
-                    // Returns an array of tick angles and labels, given a group.
-                    function groupTicks(d) {
-                        var k = (d.endAngle - d.startAngle) / d.value;
-                        return d3.range(0, d.value, 1).map(function (v, i) {
-                            return {
-                                angle: v * k + d.startAngle,
-                                label: i % 1 ? null : v
-                            };
+                                //Update the tooltip position and value
+                                d3.select("#tooltip")
+                                        .style("left", (d3.event.pageX + 10) + "px")
+                                        .style("top", (d3.event.pageY - 10) + "px")
+                                        .select("#value")
+                                        .text("Correlation:" + matrix[idx].value + "\nTimestep:" + matrix[idx].row + ", col:" + matrix[idx].col);
+                                //Show the tooltip
+                                d3.select("#tooltip").classed("hidden", false);
+                            })
+                            .on("mouseout", function () {
+                                d3.select(this).classed("cell-hover", false);
+                                d3.selectAll(".rowLabel").classed("text-highlight", false);
+                                d3.selectAll(".colLabel").classed("text-highlight", false);
+                                d3.select("#tooltip").classed("hidden", true);
+                            })
+                            .on('click', function (d, idx) {
+                                SELECTED_ROW = matrix[idx].row;
+                                var lowerUpper = boundInput.attr('value').split(',');
+                                generateChord(parseFloat(lowerUpper[0]), parseFloat(lowerUpper[1]), d.row);
+                                markers = TIMESTEPS[SELECTED_ROW * 30];
+                                markToID = {
+                                    'spindle': '#spindle',
+                                    'Markon: w': '#m-on-w',
+                                    'Markoff: w': '#m-off-w',
+                                    'Markoff: 1': '#m-on-1',
+                                    'Markon: 1': '#m-off-1',
+                                    'Markoff: 2': '#m-on-2',
+                                    'Markon: 2': '#m-off-2',
+                                    'Markon: 3': '#m-on-3',
+                                    'Markoff: 3': '#m-off-3'
+                                };
+                                currentTimestep.html(CONVERTED_TIMESTEPS[SELECTED_ROW]);
+                                $('html,body').animate({
+                                    scrollTop: chordContainer.offset().top
+                                });
+                                console.log('----------------------');
+                                $('.badge').html(0);
+                                $('.badge').removeClass('teal');
+                                for (var i = 0; i < markers.length; i++) {
+                                    console.log('PHASE: ', MARKS[markers[i]]);
+                                    markId = $(markToID[MARKS[markers[i]]]);
+                                    markId.html(parseInt(markId.html()) + 1);
+                                    markId.addClass('teal');
+                                }
+                            });
+                    bicluster = function (originalData) {
+                        biclustered = true;
+                        clusterButton.addClass('disabled');
+                        d3.json(fittedDataPath, function (indices) {
+                            console.log(indices['data'].length, originalData.length);
+                            console.log(d3.selectAll('.cell'));
+                            d3.selectAll('.cell')
+                                    .style("fill", function (d, idx) {
+                                        var rowCol = indices['data'][idx];
+                                        matrix[idx] = {
+                                            'row': rowCol[0],
+                                            'col': rowCol[1],
+                                            'value': originalData[rowCol[0]][rowCol[1]]
+                                        };
+                                        return colorScale(originalData[rowCol[0]][rowCol[1]]);
+                                    });
+                            console.log('done fitting');
                         });
-                    }
+                    };
+                    clusterButton.on('click', function (e) {
+                        if (!biclustered) {
+                            bicluster(data['data']);
+                        }
+                        e.preventDefault();
+                    });
+
+                    MAX_ROW_TIME = data['data'].length;
+                    d3.select("#timeInput").attr("max", MAX_ROW_TIME - 1);
+                    console.log('data retrieved');
+                    // TODO: Find min/max of data and alter bound
+                    // TODO: get actual labels
+                    generateMatrix = function (ROW_TIME) {
+                        var START_COLUMN = 0;
+                        var END_COLUMN = 61;
+                        var ROW_TIME = ROW_TIME;
+                        var matrix = new Array(61);
+                        // insert into node 0 first
+                        var rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
+                        matrix[0] = rowData;
+                        START_COLUMN = END_COLUMN;
+                        END_COLUMN += 60;
+                        // fill in rest of array, not forgetting to store the previously calculated value (eg. 1 vs 0 is not in the interval)
+                        for (var i = 1; i < 61; i++) {
+                            rowData = data['data'][ROW_TIME].slice(START_COLUMN, END_COLUMN);
+                            //rowData.splice(i - 1, 0, data['data'][ROW_TIME][i]); // insert i vs i - 1 since it's not in JSON
+                            matrix[i] = rowData;
+                            START_COLUMN = END_COLUMN;
+                            END_COLUMN += (60 - i);
+                        }
+                        // fill in missing values in matrix
+                        for (var i = 1; i < 61; i++) {
+                            for (j = 0; j < i; j++) {
+                                matrix[i].splice(j, 0, matrix[j][i]);
+                            }
+                        }
+                        return matrix;
+                    };
+
+                    generateChord = function (lowerBound, upperBound, time) {
+                        d3.selectAll('.chordDiagram').remove();
+                        var alteredMatrix = generateMatrix(time);
+                        // threshold test
+                        for (var i = 0; i < 61; i++) {
+                            for (var j = 0; j < 61; j++) {
+                                //check if it's negative
+                                if (alteredMatrix[i][j] >= lowerBound && alteredMatrix[i][j] <= upperBound) {
+                                    if (alteredMatrix[i][j] < 0) {
+                                        // chord messes up on negatives
+                                        alteredMatrix[i][j] = Math.abs(alteredMatrix[i][j]);
+                                    } else {
+                                        alteredMatrix[i][j] = alteredMatrix[i][j];
+                                    }
+                                } else {
+                                    alteredMatrix[i][j] = 0;
+                                }
+                            }
+                        }
 
 
-                    // Returns an event handler for fading a given chord group.
-                    function fade(opacity) {
-                        return function (g, i) {
-                            svg.selectAll(".chord path")
-                                    .filter(function (d) {
-                                        return d.source.index != i && d.target.index != i;
-                                    })
-                                    .transition()
-                                    .style("opacity", opacity);
-                        };
-                    }
-                };
-                generateChord(0, 0.5, SELECTED_ROW);
-                visualizeButton.removeClass('disabled');
+                        chord = d3.layout.chord()
+                                .padding(0.05)
+                                .sortSubgroups(d3.descending)
+                                .matrix(alteredMatrix);
+
+
+                        //DIMENSIONS
+                        width = 1000,
+                                height = 600,
+                                innerRadius = Math.min(width, height) * 0.41,
+                                outerRadius = innerRadius * 1.05,
+                                names = [];
+
+                        for (var i = 0; i < 64; i++) {
+                            names[i] = NODE_LABELS[i];
+                        }
+                        //COLORS
+                        fill = d3.scale.ordinal()
+                                .domain(d3.range(5)) // number of colors
+                                .range(["#000000", "#FFDD89", "#957244", "#F26223", "#E0E000"]);
+
+                        //Setting the Dimensions
+                        svg = d3.select("#chord").append("svg")
+                                .attr("width", width)
+                                .attr("height", height)
+                                .attr("class", "chordDiagram")
+                                .append("g")
+                                .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+
+                        //Setting Colors and Mouseover/Mouseout effects
+                        svg.append("g").selectAll("path")
+                                .data(chord.groups)
+                                .enter().append("path")
+                                .style("fill", function (d) {
+                                    return fill(d.index);
+                                })
+                                .style("stroke", function (d) {
+                                    return fill(d.index);
+                                })
+                                .attr("d", d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius))
+                                .on("mouseover", fade(.2))
+                                .on("mouseout", fade(1))
+                                .on("click", function (d) {
+                                    console.log(d['index']);
+
+                                });
+
+                        //Ticks and it's labels
+                        ticks = svg.append("g").selectAll("g")
+                                .data(chord.groups)
+                                .enter().append("g").selectAll("g")
+                                .data(groupTicks)
+                                .enter().append("g")
+                                .attr("transform", function (d) {
+                                    return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")"
+                                            + "translate(" + outerRadius + ",0)";
+                                });
+
+                        //tick markers lengths (don't mess with y, it change's the angle of the lines)
+                        ticks.append("line")
+                                .attr("x1", 1)
+                                .attr("y1", 0)
+                                .attr("x2", 1)
+                                .attr("y2", 0)
+
+                                .style("stroke", "#000");
+
+                        //tick labels
+                        ticks.append("text")
+                                .attr("x", 8)
+                                .attr("dy", ".35em")
+                                .attr("text-anchor", function (d) {
+                                    return d.angle > Math.PI ? "end" : null;
+                                })
+                                .attr("transform", function (d) {
+                                    return d.angle > Math.PI ? "rotate(180)translate(-16)" : null;
+                                })
+                                .style('font', '10px sans-serif');
+                        //.text(function(d) { return d.label; });
+
+                        chordgroups = chord.groups()
+                                .map(function (d) {
+                                    d.angle = (d.startAngle + d.endAngle) / 2;
+                                    return d;
+                                });
+
+                        svg.selectAll(".text")
+                                .data(chordgroups)
+                                .enter()
+                                .append("text")
+                                .attr("class", "text")
+                                .attr("text-anchor", function (d) {
+                                    return d.angle > Math.PI ? "end" : null;
+                                })
+                                .attr("transform", function (d) {
+
+                                    //rotate each label around the circle
+                                    return "rotate(" + (d.angle * 180 / Math.PI - 90) + ")" +
+                                            "translate(" + (outerRadius + 10) + ")" +
+                                            (d.angle > Math.PI ? "rotate(180)" : "");
+
+                                })
+                                .text(function (d) {
+                                    //set the text content
+                                    return names[d.index];
+                                })
+                                .style('font', '10px sans-serif');
+
+                        //
+                        svg.append("g")
+                                .attr("class", "chord")
+                                .selectAll("path")
+                                .data(chord.chords)
+                                .enter().append("path")
+                                .attr("d", d3.svg.chord().radius(innerRadius))
+                                .style("fill", function (d) {
+                                    return fill(d.target.index);
+                                })
+                                .style("opacity", 1);
+
+
+                        // Returns an array of tick angles and labels, given a group.
+                        function groupTicks(d) {
+                            var k = (d.endAngle - d.startAngle) / d.value;
+                            return d3.range(0, d.value, 1).map(function (v, i) {
+                                return {
+                                    angle: v * k + d.startAngle,
+                                    label: i % 1 ? null : v
+                                };
+                            });
+                        }
+
+
+                        // Returns an event handler for fading a given chord group.
+                        function fade(opacity) {
+                            return function (g, i) {
+                                svg.selectAll(".chord path")
+                                        .filter(function (d) {
+                                            return d.source.index != i && d.target.index != i;
+                                        })
+                                        .transition()
+                                        .style("opacity", opacity);
+                            };
+                        }
+                    };
+                    generateChord(0, 0.5, SELECTED_ROW);
+                    visualizeButton.removeClass('disabled');
 //            d3.select('#boundInput').on('change', function (e) {
 //                console.log('changed');
 //                generateChord(this.value, SELECTED_ROW);
@@ -920,28 +943,29 @@
 //            ////                    generateChord(d3.select("#boundInput")[0][0].value, this.value);
 //            //                });
 
-                $('.range-slider').jRange({
-                    from: -0.99,
-                    to: 0.99,
-                    step: 0.01,
-                    format: '%s',
-                    width: $('#chordContainer').width(),
-                    showLabels: true,
-                    showScale: true,
-                    ondragend: function (bound) {
-                        var upperLower = bound.split(',');
-                        generateChord(parseFloat(upperLower[0]), parseFloat(upperLower[1]), SELECTED_ROW);
-                    },
-                    isRange: true
+                    $('.range-slider').jRange({
+                        from: -0.99,
+                        to: 0.99,
+                        step: 0.01,
+                        format: '%s',
+                        width: $('#chordContainer').width(),
+                        showLabels: true,
+                        showScale: true,
+                        ondragend: function (bound) {
+                            var upperLower = bound.split(',');
+                            generateChord(parseFloat(upperLower[0]), parseFloat(upperLower[1]), SELECTED_ROW);
+                        },
+                        isRange: true
+                    });
                 });
-            });
-        };
+            };
 
 //        initSelected = PROCESSED_JSON[preprocessorSelect.val()][postprocessorSelect.val()];
 //        console.log(initSelected);
 //        generateViz(initSelected[0], initSelected[1])
 
-    });
+        }
+        );
 
 </script>
 <script type="application/javascript" src="d3/tether.js"></script>
