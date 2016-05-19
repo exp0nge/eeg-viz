@@ -164,6 +164,17 @@
             <h3 class="center">Edges <span class="chip">Channel vs Channel</span> vs Time <span
                     class="chip">30s Intervals</span>
                 Matrix</h3>
+
+            <div class="card grey lighten-3">
+                <p class="card-content">
+                    The matrix visualization displays correlations from -1 to +1. The rows represent time intervals (30s
+                    each). <br>
+                    The columns represent edges; channel vs channel. There are 61 channels that are relevent for
+                    correlation, so there are 1891 edges.
+                    The block structures represents networks in time.
+                </p>
+            </div>
+
             <div class="row form-inline">
                 <div class="input-field col s5  step-1">
                     <select id="preprocessorSelect">
@@ -200,6 +211,14 @@
         <div class="container" id="chordContainer">
             <h3>Correlations Between Channels</h3>
             <h5 class="step-4">Current Time Interval <span class="btn disabled" id="timeStep">1</span></h5>
+            <div class="card grey lighten-3">
+                <p class="card-content">
+                    The chord diagram shows the correlations between channels at the selected time interval. By moving
+                    the range slider, the correlations for that range will be shown. <br>
+                    If the chord diagram does not show up, even after clicking a row on the matrix visualization, change
+                    the range on the slider.
+                </p>
+            </div>
             <input type="hidden" class="range-slider" id="boundInput" value="0.02"/>
             <div id="chord">Click <code><a href="#visualize">Visualize</a></code> to populate this field.</div>
             <hr>
@@ -635,8 +654,8 @@
                             d3.selectAll(".colLabel").classed("text-highlight", false);
                             d3.select("#tooltip").classed("hidden", true);
                         })
-                        .on('click', function (d) {
-                            SELECTED_ROW = d.row;
+                        .on('click', function (d, idx) {
+                            SELECTED_ROW = matrix[idx].row;
                             var lowerUpper = boundInput.attr('value').split(',');
                             generateChord(parseFloat(lowerUpper[0]), parseFloat(lowerUpper[1]), d.row);
                             markers = TIMESTEPS[SELECTED_ROW * 30];
